@@ -1,0 +1,7 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "installCommand": "echo \"Versão estática: nada a instalar\"",
+  "buildCommand": "echo \"Usando site/index.html (gere de novo com: npm install && npm run build:html && cp dist/index.html site/)\"",
+  "outputDirectory": "site"
+}

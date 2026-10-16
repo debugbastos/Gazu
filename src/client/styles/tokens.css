@@ -1,0 +1,78 @@
+/* ==========================================================================
+   GAZU — tokens de design
+   Paleta provisória do PRD + escala tipográfica derivada das referências.
+   Para trocar a fonte oficial, altere apenas --font-display / --font-sans.
+   ========================================================================== */
+
+@font-face { font-family: 'Inter Display'; src: url('/assets/branding/fonts/InterDisplay-Bold.woff') format('woff'); font-weight: 700; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Inter Display'; src: url('/assets/branding/fonts/InterDisplay-SemiBold.woff') format('woff'); font-weight: 600; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Inter'; src: url('/assets/branding/fonts/Inter-Regular.woff') format('woff'); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Inter'; src: url('/assets/branding/fonts/Inter-Medium.woff') format('woff'); font-weight: 500; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Inter'; src: url('/assets/branding/fonts/Inter-SemiBold.woff') format('woff'); font-weight: 600; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Inter'; src: url('/assets/branding/fonts/Inter-SemiBold.woff') format('woff'); font-weight: 700; font-style: normal; font-display: swap; }
+
+:root {
+  /* Paleta */
+  --c-black: #111111;
+  --c-graphite: #242424;
+  --c-white: #ffffff;
+  --c-offwhite: #f7f6f3;
+  --c-stone: #e8e7e3;          /* cinza-claro do PRD — fundo do hero e da faixa de confiança */
+  --c-stone-2: #dcdbd7;        /* fundo editorial "Nova estação" */
+  --c-photo: #ecebe7;          /* fundo de molduras de foto */
+  --c-line: #d6d5d0;
+  --c-line-soft: #e6e5e1;
+  --c-muted: #6b6b6b;          /* cinza de apoio (#777 escurecido para contraste AA em fundo claro) */
+  --c-muted-2: #8d8d8a;
+  --c-on-dark-muted: #b9b8b4;
+  --c-success: #2f6b46;
+  --c-warning: #8a5a12;
+  --c-danger: #a3271f;
+  --c-info: #2d4a6b;
+
+  /* Tipografia */
+  --font-display: 'Inter Display', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  --font-sans: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  --tracking-caps: 0.14em;
+  --tracking-caps-wide: 0.22em;
+  --fs-micro: 0.6875rem;   /* 11px */
+  --fs-xs: 0.75rem;        /* 12px */
+  --fs-sm: 0.8125rem;      /* 13px */
+  --fs-base: 0.9375rem;    /* 15px */
+  --fs-md: 1.0625rem;      /* 17px */
+  --fs-lg: 1.375rem;
+  --fs-xl: clamp(1.5rem, 1.1rem + 1.2vw, 2rem);
+  --fs-2xl: clamp(2rem, 1.2rem + 2.6vw, 3.25rem);
+  --fs-3xl: clamp(2.6rem, 1.4rem + 4.2vw, 5.25rem);
+
+  /* Layout */
+  --container: 1440px;
+  --gutter: clamp(16px, 7.2vw, 108px);        /* recuo do conteúdo (referência: 52px em 736px) */
+  --header-gutter: clamp(16px, 3.9vw, 56px);   /* cabeçalho e barra de anúncio ficam mais próximos da borda */
+  --inset: clamp(16px, 8.4vw, 124px);   /* recuo editorial do hero/blocos (referência: 62px em 736px) */
+  --announce-h: 40px;
+  --header-h: 72px;
+  --radius: 0px;
+  --radius-sm: 2px;
+
+  /* Movimento */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast: 160ms;
+  --dur: 320ms;
+  --dur-slow: 700ms;
+
+  --shadow-pop: 0 18px 50px -18px rgba(17, 17, 17, 0.28);
+  --focus: 0 0 0 2px var(--c-white), 0 0 0 4px var(--c-black);
+}
+
+@media (min-width: 1024px) {
+  :root { --header-h: 92px; }
+}
+@media (min-width: 1280px) and (min-height: 800px) {
+  :root { --header-h: 104px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --dur-fast: 1ms; --dur: 1ms; --dur-slow: 1ms; }
+}

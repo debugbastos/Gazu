@@ -1,0 +1,2170 @@
+{
+  "products": {
+    "camiseta-oversized-bege-script": {
+      "file": "029d2a83633f7b522e90ec78a17a00f0.jpg",
+      "group": "clothing",
+      "original": {
+        "width": 735,
+        "height": 979,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 639,
+          "url": "/assets/products/clothing/camiseta-oversized-bege-script/camiseta-oversized-bege-script-480.webp"
+        },
+        {
+          "width": 735,
+          "height": 979,
+          "url": "/assets/products/clothing/camiseta-oversized-bege-script/camiseta-oversized-bege-script-735.webp"
+        }
+      ]
+    },
+    "jaqueta-corta-vento-racing-preta": {
+      "file": "0532a4ccbd5a4ce79ce63a29c105694f.jpg",
+      "group": "clothing",
+      "original": {
+        "width": 736,
+        "height": 980,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 639,
+          "url": "/assets/products/clothing/jaqueta-corta-vento-racing-preta/jaqueta-corta-vento-racing-preta-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 980,
+          "url": "/assets/products/clothing/jaqueta-corta-vento-racing-preta/jaqueta-corta-vento-racing-preta-736.webp"
+        }
+      ]
+    },
+    "moletom-infantil-preto-manga-xadrez": {
+      "file": "089c8adfc117742c3e78071c81c3b035.jpg",
+      "group": "clothing",
+      "original": {
+        "width": 736,
+        "height": 1104,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 720,
+          "url": "/assets/products/clothing/moletom-infantil-preto-manga-xadrez/moletom-infantil-preto-manga-xadrez-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 1104,
+          "url": "/assets/products/clothing/moletom-infantil-preto-manga-xadrez/moletom-infantil-preto-manga-xadrez-736.webp"
+        }
+      ]
+    },
+    "calca-moletom-wide-cinza-tribal": {
+      "file": "096723aa57313c6a9f54d56046b2aade.jpg",
+      "group": "clothing",
+      "original": {
+        "width": 736,
+        "height": 980,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 639,
+          "url": "/assets/products/clothing/calca-moletom-wide-cinza-tribal/calca-moletom-wide-cinza-tribal-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 980,
+          "url": "/assets/products/clothing/calca-moletom-wide-cinza-tribal/calca-moletom-wide-cinza-tribal-736.webp"
+        }
+      ]
+    },
+    "short-alfaiataria-branco-cinto": {
+      "file": "0bb1e3c1b4d246471354991675622231.jpg",
+      "group": "clothing",
+      "original": {
+        "width": 736,
+        "height": 1307,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 852,
+          "url": "/assets/products/clothing/short-alfaiataria-branco-cinto/short-alfaiataria-branco-cinto-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 1307,
+          "url": "/assets/products/clothing/short-alfaiataria-branco-cinto/short-alfaiataria-branco-cinto-736.webp"
+        }
+      ]
+    },
+    "calca-jogger-preta-estampa-lateral": {
+      "file": "0d32bd94fc09ea6af4fa1e2037c73ae2.jpg",
+      "group": "clothing",
+      "original": {
+        "width": 736,
+        "height": 1104,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 720,
+          "url": "/assets/products/clothing/calca-jogger-preta-estampa-lateral/calca-jogger-preta-estampa-lateral-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 1104,
+          "url": "/assets/products/clothing/calca-jogger-preta-estampa-lateral/calca-jogger-preta-estampa-lateral-736.webp"
+        }
+      ]
+    },
+    "bone-dad-hat-estonado-preto": {
+      "file": "1614f6691d63a5592d43b41e6cfe470c.jpg",
+      "group": "accessories",
+      "original": {
+        "width": 736,
+        "height": 980,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 639,
+          "url": "/assets/products/accessories/bone-dad-hat-estonado-preto/bone-dad-hat-estonado-preto-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 980,
+          "url": "/assets/products/accessories/bone-dad-hat-estonado-preto/bone-dad-hat-estonado-preto-736.webp"
+        }
+      ]
+    },
+    "bone-aba-curva-creme-marrom": {
+      "file": "1e9eeccaf419fd20e090e52d4c4ada00.jpg",
+      "group": "accessories",
+      "original": {
+        "width": 736,
+        "height": 1104,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 720,
+          "url": "/assets/products/accessories/bone-aba-curva-creme-marrom/bone-aba-curva-creme-marrom-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 1104,
+          "url": "/assets/products/accessories/bone-aba-curva-creme-marrom/bone-aba-curva-creme-marrom-736.webp"
+        }
+      ]
+    },
+    "colar-duplo-borboletas-dourado": {
+      "file": "1fa90dbaaed41f1964c3958d34100965.jpg",
+      "group": "accessories",
+      "original": {
+        "width": 720,
+        "height": 1080,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 720,
+          "url": "/assets/products/accessories/colar-duplo-borboletas-dourado/colar-duplo-borboletas-dourado-480.webp"
+        },
+        {
+          "width": 720,
+          "height": 1080,
+          "url": "/assets/products/accessories/colar-duplo-borboletas-dourado/colar-duplo-borboletas-dourado-720.webp"
+        }
+      ]
+    },
+    "short-alfaiataria-marrom-cinto": {
+      "file": "2447403ddc789510e4b6f48ca88c8972.jpg",
+      "group": "clothing",
+      "original": {
+        "width": 736,
+        "height": 980,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 639,
+          "url": "/assets/products/clothing/short-alfaiataria-marrom-cinto/short-alfaiataria-marrom-cinto-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 980,
+          "url": "/assets/products/clothing/short-alfaiataria-marrom-cinto/short-alfaiataria-marrom-cinto-736.webp"
+        }
+      ]
+    },
+    "vestido-longo-branco-floral": {
+      "file": "26038210e6c9960c12f2244c7b54b543.jpg",
+      "group": "clothing",
+      "original": {
+        "width": 736,
+        "height": 1307,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 852,
+          "url": "/assets/products/clothing/vestido-longo-branco-floral/vestido-longo-branco-floral-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 1307,
+          "url": "/assets/products/clothing/vestido-longo-branco-floral/vestido-longo-branco-floral-736.webp"
+        }
+      ]
+    },
+    "camiseta-esportiva-branca-recortes": {
+      "file": "2aa9803d75a33a38c69b2fecb3606c8a.jpg",
+      "group": "clothing",
+      "original": {
+        "width": 736,
+        "height": 736,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 480,
+          "url": "/assets/products/clothing/camiseta-esportiva-branca-recortes/camiseta-esportiva-branca-recortes-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 736,
+          "url": "/assets/products/clothing/camiseta-esportiva-branca-recortes/camiseta-esportiva-branca-recortes-736.webp"
+        }
+      ]
+    },
+    "conjunto-moletom-infantil-cinza": {
+      "file": "2d6fdc78997196911c0eb8a3295e246d.jpg",
+      "group": "clothing",
+      "original": {
+        "width": 736,
+        "height": 1104,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 720,
+          "url": "/assets/products/clothing/conjunto-moletom-infantil-cinza/conjunto-moletom-infantil-cinza-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 1104,
+          "url": "/assets/products/clothing/conjunto-moletom-infantil-cinza/conjunto-moletom-infantil-cinza-736.webp"
+        }
+      ]
+    },
+    "calca-jeans-wide-azul-claro": {
+      "file": "2e95109710fbdf50d76ec727ba430b09.jpg",
+      "group": "clothing",
+      "original": {
+        "width": 736,
+        "height": 1104,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 720,
+          "url": "/assets/products/clothing/calca-jeans-wide-azul-claro/calca-jeans-wide-azul-claro-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 1104,
+          "url": "/assets/products/clothing/calca-jeans-wide-azul-claro/calca-jeans-wide-azul-claro-736.webp"
+        }
+      ]
+    },
+    "conjunto-moletom-masculino-cinza": {
+      "file": "33bd82a6781fcee0e9493a7a57ab47d0.jpg",
+      "group": "clothing",
+      "original": {
+        "width": 649,
+        "height": 1263,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 934,
+          "url": "/assets/products/clothing/conjunto-moletom-masculino-cinza/conjunto-moletom-masculino-cinza-480.webp"
+        },
+        {
+          "width": 649,
+          "height": 1263,
+          "url": "/assets/products/clothing/conjunto-moletom-masculino-cinza/conjunto-moletom-masculino-cinza-649.webp"
+        }
+      ]
+    },
+    "jaqueta-racing-preta-patches": {
+      "file": "344f27c47c9b902c69566f403fa37a7b.jpg",
+      "group": "clothing",
+      "original": {
+        "width": 735,
+        "height": 909,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 594,
+          "url": "/assets/products/clothing/jaqueta-racing-preta-patches/jaqueta-racing-preta-patches-480.webp"
+        },
+        {
+          "width": 735,
+          "height": 909,
+          "url": "/assets/products/clothing/jaqueta-racing-preta-patches/jaqueta-racing-preta-patches-735.webp"
+        }
+      ]
+    },
+    "relogio-prata-pulseira-grumet": {
+      "file": "36725b797b03b9d7f5b4fe4a9de90b96.jpg",
+      "group": "accessories",
+      "original": {
+        "width": 736,
+        "height": 1104,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 720,
+          "url": "/assets/products/accessories/relogio-prata-pulseira-grumet/relogio-prata-pulseira-grumet-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 1104,
+          "url": "/assets/products/accessories/relogio-prata-pulseira-grumet/relogio-prata-pulseira-grumet-736.webp"
+        }
+      ]
+    },
+    "short-moletom-cordao": {
+      "file": "3853e2c37c138814fc13c6ecbdf932bd.jpg",
+      "group": "clothing",
+      "original": {
+        "width": 630,
+        "height": 787,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 600,
+          "url": "/assets/products/clothing/short-moletom-cordao/short-moletom-cordao-480.webp"
+        },
+        {
+          "width": 630,
+          "height": 787,
+          "url": "/assets/products/clothing/short-moletom-cordao/short-moletom-cordao-630.webp"
+        }
+      ]
+    },
+    "conjunto-infantil-panda": {
+      "file": "3a92e93178691b323cecc0bc9aa6c09d.jpg",
+      "group": "clothing",
+      "original": {
+        "width": 735,
+        "height": 985,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 643,
+          "url": "/assets/products/clothing/conjunto-infantil-panda/conjunto-infantil-panda-480.webp"
+        },
+        {
+          "width": 735,
+          "height": 985,
+          "url": "/assets/products/clothing/conjunto-infantil-panda/conjunto-infantil-panda-735.webp"
+        }
+      ]
+    },
+    "chapeu-bucket-grafite": {
+      "file": "3c2a7098a50585b1bdbf8f57e5e2813f.jpg",
+      "group": "accessories",
+      "original": {
+        "width": 720,
+        "height": 959,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 639,
+          "url": "/assets/products/accessories/chapeu-bucket-grafite/chapeu-bucket-grafite-480.webp"
+        },
+        {
+          "width": 720,
+          "height": 959,
+          "url": "/assets/products/accessories/chapeu-bucket-grafite/chapeu-bucket-grafite-720.webp"
+        }
+      ]
+    },
+    "camiseta-oversized-motorsport": {
+      "file": "3c33abeb0eac9b91c1d8ab78ddcbc817.jpg",
+      "group": "clothing",
+      "original": {
+        "width": 736,
+        "height": 1104,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 720,
+          "url": "/assets/products/clothing/camiseta-oversized-motorsport/camiseta-oversized-motorsport-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 1104,
+          "url": "/assets/products/clothing/camiseta-oversized-motorsport/camiseta-oversized-motorsport-736.webp"
+        }
+      ]
+    },
+    "tenis-branco-listras-verdes": {
+      "file": "3d4d9cfbbf7dcb99f871249ce4de6d63.jpg",
+      "group": "sneakers",
+      "original": {
+        "width": 736,
+        "height": 1090,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 711,
+          "url": "/assets/products/sneakers/tenis-branco-listras-verdes/tenis-branco-listras-verdes-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 1090,
+          "url": "/assets/products/sneakers/tenis-branco-listras-verdes/tenis-branco-listras-verdes-736.webp"
+        }
+      ]
+    },
+    "tenis-running-branco": {
+      "file": "3fd7fec33bfe2b4468217aaec124f856.jpg",
+      "group": "sneakers",
+      "original": {
+        "width": 736,
+        "height": 736,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 480,
+          "url": "/assets/products/sneakers/tenis-running-branco/tenis-running-branco-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 736,
+          "url": "/assets/products/sneakers/tenis-running-branco/tenis-running-branco-736.webp"
+        }
+      ]
+    },
+    "jaqueta-racing-preta-vermelha": {
+      "file": "41344ee9ad6c1c511ff8ee770e03aaa2.jpg",
+      "group": "clothing",
+      "original": {
+        "width": 736,
+        "height": 920,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 600,
+          "url": "/assets/products/clothing/jaqueta-racing-preta-vermelha/jaqueta-racing-preta-vermelha-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 920,
+          "url": "/assets/products/clothing/jaqueta-racing-preta-vermelha/jaqueta-racing-preta-vermelha-736.webp"
+        }
+      ]
+    },
+    "tenis-skate-branco-estampado": {
+      "file": "414cab7358fe5f56110df1b234083790.jpg",
+      "group": "sneakers",
+      "original": {
+        "width": 736,
+        "height": 920,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 600,
+          "url": "/assets/products/sneakers/tenis-skate-branco-estampado/tenis-skate-branco-estampado-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 920,
+          "url": "/assets/products/sneakers/tenis-skate-branco-estampado/tenis-skate-branco-estampado-736.webp"
+        }
+      ]
+    },
+    "conjunto-infantil-degrade-marrom": {
+      "file": "45b5048f3df7179c3ad29efda3fd5e63.jpg",
+      "group": "clothing",
+      "original": {
+        "width": 736,
+        "height": 980,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 639,
+          "url": "/assets/products/clothing/conjunto-infantil-degrade-marrom/conjunto-infantil-degrade-marrom-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 980,
+          "url": "/assets/products/clothing/conjunto-infantil-degrade-marrom/conjunto-infantil-degrade-marrom-736.webp"
+        }
+      ]
+    },
+    "bone-aba-curva-branco": {
+      "file": "46527e5a63d2dfd0d9f770f8c31711c9.jpg",
+      "group": "accessories",
+      "original": {
+        "width": 736,
+        "height": 1066,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 695,
+          "url": "/assets/products/accessories/bone-aba-curva-branco/bone-aba-curva-branco-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 1066,
+          "url": "/assets/products/accessories/bone-aba-curva-branco/bone-aba-curva-branco-736.webp"
+        }
+      ]
+    },
+    "calca-track-vinho-vivo-branco": {
+      "file": "470e7219bcc967b0b561af52975f9755.jpg",
+      "group": "clothing",
+      "original": {
+        "width": 736,
+        "height": 1308,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 853,
+          "url": "/assets/products/clothing/calca-track-vinho-vivo-branco/calca-track-vinho-vivo-branco-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 1308,
+          "url": "/assets/products/clothing/calca-track-vinho-vivo-branco/calca-track-vinho-vivo-branco-736.webp"
+        }
+      ]
+    },
+    "vestido-midi-cerejas": {
+      "file": "47631c173f7ea505690c2196e8462f5f.jpg",
+      "group": "clothing",
+      "original": {
+        "width": 736,
+        "height": 1306,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 852,
+          "url": "/assets/products/clothing/vestido-midi-cerejas/vestido-midi-cerejas-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 1306,
+          "url": "/assets/products/clothing/vestido-midi-cerejas/vestido-midi-cerejas-736.webp"
+        }
+      ]
+    },
+    "camiseta-raglan-california": {
+      "file": "4bfd1fe7db867b2e4a9e7b0b39f0a744.jpg",
+      "group": "clothing",
+      "original": {
+        "width": 736,
+        "height": 980,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 639,
+          "url": "/assets/products/clothing/camiseta-raglan-california/camiseta-raglan-california-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 980,
+          "url": "/assets/products/clothing/camiseta-raglan-california/camiseta-raglan-california-736.webp"
+        }
+      ]
+    },
+    "short-jeans-laco-azul-claro": {
+      "file": "4c624df1e3203385975d02da68d5f3b1.jpg",
+      "group": "clothing",
+      "original": {
+        "width": 736,
+        "height": 981,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 640,
+          "url": "/assets/products/clothing/short-jeans-laco-azul-claro/short-jeans-laco-azul-claro-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 981,
+          "url": "/assets/products/clothing/short-jeans-laco-azul-claro/short-jeans-laco-azul-claro-736.webp"
+        }
+      ]
+    },
+    "calca-cargo-feminina-marrom": {
+      "file": "4cf64e05e4d22aad0b1a924fa19f29c1.jpg",
+      "group": "clothing",
+      "original": {
+        "width": 608,
+        "height": 1038,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 819,
+          "url": "/assets/products/clothing/calca-cargo-feminina-marrom/calca-cargo-feminina-marrom-480.webp"
+        },
+        {
+          "width": 608,
+          "height": 1038,
+          "url": "/assets/products/clothing/calca-cargo-feminina-marrom/calca-cargo-feminina-marrom-608.webp"
+        }
+      ]
+    },
+    "tenis-skate-preto-lilas": {
+      "file": "5229be01dcee81619d1c929406096203.jpg",
+      "group": "sneakers",
+      "original": {
+        "width": 736,
+        "height": 1104,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 720,
+          "url": "/assets/products/sneakers/tenis-skate-preto-lilas/tenis-skate-preto-lilas-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 1104,
+          "url": "/assets/products/sneakers/tenis-skate-preto-lilas/tenis-skate-preto-lilas-736.webp"
+        }
+      ]
+    },
+    "calca-linho-wide-bege": {
+      "file": "53651328d15f34402c2c6a8a92b0dcca.jpg",
+      "group": "clothing",
+      "original": {
+        "width": 736,
+        "height": 1318,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 860,
+          "url": "/assets/products/clothing/calca-linho-wide-bege/calca-linho-wide-bege-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 1318,
+          "url": "/assets/products/clothing/calca-linho-wide-bege/calca-linho-wide-bege-736.webp"
+        }
+      ]
+    },
+    "tenis-off-white-cerejas": {
+      "file": "5d45d5812ac83d082336b6e9d2428df7.jpg",
+      "group": "sneakers",
+      "original": {
+        "width": 736,
+        "height": 920,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 600,
+          "url": "/assets/products/sneakers/tenis-off-white-cerejas/tenis-off-white-cerejas-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 920,
+          "url": "/assets/products/sneakers/tenis-off-white-cerejas/tenis-off-white-cerejas-736.webp"
+        }
+      ]
+    },
+    "calca-cargo-masculina-preta": {
+      "file": "5e3643786890fa962969be497e0d14ee.jpg",
+      "group": "clothing",
+      "original": {
+        "width": 736,
+        "height": 1336,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 871,
+          "url": "/assets/products/clothing/calca-cargo-masculina-preta/calca-cargo-masculina-preta-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 1336,
+          "url": "/assets/products/clothing/calca-cargo-masculina-preta/calca-cargo-masculina-preta-736.webp"
+        }
+      ]
+    },
+    "camiseta-oversized-bloom-borboleta": {
+      "file": "6296c5483fb54c94dbeca9b0248b9c11.jpg",
+      "group": "clothing",
+      "original": {
+        "width": 736,
+        "height": 981,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 640,
+          "url": "/assets/products/clothing/camiseta-oversized-bloom-borboleta/camiseta-oversized-bloom-borboleta-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 981,
+          "url": "/assets/products/clothing/camiseta-oversized-bloom-borboleta/camiseta-oversized-bloom-borboleta-736.webp"
+        }
+      ]
+    },
+    "conjunto-infantil-moletom-saia-rosa": {
+      "file": "667a215e507259e86ca120f37e6e00f8.jpg",
+      "group": "clothing",
+      "original": {
+        "width": 736,
+        "height": 1115,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 727,
+          "url": "/assets/products/clothing/conjunto-infantil-moletom-saia-rosa/conjunto-infantil-moletom-saia-rosa-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 1115,
+          "url": "/assets/products/clothing/conjunto-infantil-moletom-saia-rosa/conjunto-infantil-moletom-saia-rosa-736.webp"
+        }
+      ]
+    },
+    "kit-pulseiras-anel-dourado": {
+      "file": "67604dfd5b6c243bd8ad778d21a95a14.jpg",
+      "group": "accessories",
+      "original": {
+        "width": 640,
+        "height": 1136,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 852,
+          "url": "/assets/products/accessories/kit-pulseiras-anel-dourado/kit-pulseiras-anel-dourado-480.webp"
+        },
+        {
+          "width": 640,
+          "height": 1136,
+          "url": "/assets/products/accessories/kit-pulseiras-anel-dourado/kit-pulseiras-anel-dourado-640.webp"
+        }
+      ]
+    },
+    "kit-relogio-preto-acessorios": {
+      "file": "67c885297d9dcc1f0a3e51e75ce34e86.jpg",
+      "group": "accessories",
+      "original": {
+        "width": 736,
+        "height": 981,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 640,
+          "url": "/assets/products/accessories/kit-relogio-preto-acessorios/kit-relogio-preto-acessorios-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 981,
+          "url": "/assets/products/accessories/kit-relogio-preto-acessorios/kit-relogio-preto-acessorios-736.webp"
+        }
+      ]
+    },
+    "calca-track-preta-vivo-branco": {
+      "file": "72021379c18a9b0af23b474fd77a4f91.jpg",
+      "group": "clothing",
+      "original": {
+        "width": 735,
+        "height": 1210,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 790,
+          "url": "/assets/products/clothing/calca-track-preta-vivo-branco/calca-track-preta-vivo-branco-480.webp"
+        },
+        {
+          "width": 735,
+          "height": 1210,
+          "url": "/assets/products/clothing/calca-track-preta-vivo-branco/calca-track-preta-vivo-branco-735.webp"
+        }
+      ]
+    },
+    "calca-jeans-wide-cinza": {
+      "file": "734f5ffe04a8c31d87f7f5a767d2c3f8.jpg",
+      "group": "clothing",
+      "original": {
+        "width": 736,
+        "height": 944,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 616,
+          "url": "/assets/products/clothing/calca-jeans-wide-cinza/calca-jeans-wide-cinza-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 944,
+          "url": "/assets/products/clothing/calca-jeans-wide-cinza/calca-jeans-wide-cinza-736.webp"
+        }
+      ]
+    },
+    "camiseta-baby-look-raglan-dream": {
+      "file": "7c9091c489c080e8a4627402f35e81b3.jpg",
+      "group": "clothing",
+      "original": {
+        "width": 736,
+        "height": 981,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 640,
+          "url": "/assets/products/clothing/camiseta-baby-look-raglan-dream/camiseta-baby-look-raglan-dream-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 981,
+          "url": "/assets/products/clothing/camiseta-baby-look-raglan-dream/camiseta-baby-look-raglan-dream-736.webp"
+        }
+      ]
+    },
+    "jaqueta-moletom-ziper-gotica": {
+      "file": "7e786f48cfe2cf20249358c37d85fe84.jpg",
+      "group": "clothing",
+      "original": {
+        "width": 736,
+        "height": 980,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 639,
+          "url": "/assets/products/clothing/jaqueta-moletom-ziper-gotica/jaqueta-moletom-ziper-gotica-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 980,
+          "url": "/assets/products/clothing/jaqueta-moletom-ziper-gotica/jaqueta-moletom-ziper-gotica-736.webp"
+        }
+      ]
+    },
+    "camiseta-oversized-branca-estampa-vermelha": {
+      "file": "83718a65763cf9b006113f8df59264df.jpg",
+      "group": "clothing",
+      "original": {
+        "width": 736,
+        "height": 980,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 639,
+          "url": "/assets/products/clothing/camiseta-oversized-branca-estampa-vermelha/camiseta-oversized-branca-estampa-vermelha-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 980,
+          "url": "/assets/products/clothing/camiseta-oversized-branca-estampa-vermelha/camiseta-oversized-branca-estampa-vermelha-736.webp"
+        }
+      ]
+    },
+    "pulseira-couro-preta": {
+      "file": "8373a6a7cdfe2bb0621e7c18eb2fbffe.jpg",
+      "group": "accessories",
+      "original": {
+        "width": 514,
+        "height": 690,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 644,
+          "url": "/assets/products/accessories/pulseira-couro-preta/pulseira-couro-preta-480.webp"
+        },
+        {
+          "width": 514,
+          "height": 690,
+          "url": "/assets/products/accessories/pulseira-couro-preta/pulseira-couro-preta-514.webp"
+        }
+      ]
+    },
+    "jardineira-infantil-jeans": {
+      "file": "849b2544f114cb82ef10474153acd226.jpg",
+      "group": "clothing",
+      "original": {
+        "width": 736,
+        "height": 1104,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 720,
+          "url": "/assets/products/clothing/jardineira-infantil-jeans/jardineira-infantil-jeans-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 1104,
+          "url": "/assets/products/clothing/jardineira-infantil-jeans/jardineira-infantil-jeans-736.webp"
+        }
+      ]
+    },
+    "conjunto-infantil-laco-lilas": {
+      "file": "861a33b9c23a416d0c7c1e51aa937663.jpg",
+      "group": "clothing",
+      "original": {
+        "width": 736,
+        "height": 980,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 639,
+          "url": "/assets/products/clothing/conjunto-infantil-laco-lilas/conjunto-infantil-laco-lilas-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 980,
+          "url": "/assets/products/clothing/conjunto-infantil-laco-lilas/conjunto-infantil-laco-lilas-736.webp"
+        }
+      ]
+    },
+    "camiseta-oversized-speed": {
+      "file": "8cd1d4b984b060d5bb39999e38757bc3.jpg",
+      "group": "clothing",
+      "original": {
+        "width": 736,
+        "height": 979,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 638,
+          "url": "/assets/products/clothing/camiseta-oversized-speed/camiseta-oversized-speed-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 979,
+          "url": "/assets/products/clothing/camiseta-oversized-speed/camiseta-oversized-speed-736.webp"
+        }
+      ]
+    },
+    "conjunto-infantil-regata-bermuda": {
+      "file": "8ce3171208629c88e546daf21431ca7f.jpg",
+      "group": "clothing",
+      "original": {
+        "width": 736,
+        "height": 1308,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 853,
+          "url": "/assets/products/clothing/conjunto-infantil-regata-bermuda/conjunto-infantil-regata-bermuda-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 1308,
+          "url": "/assets/products/clothing/conjunto-infantil-regata-bermuda/conjunto-infantil-regata-bermuda-736.webp"
+        }
+      ]
+    },
+    "calca-jeans-wide-infantil": {
+      "file": "8dd1738a4c56f45082d1b5546e4ec9a6.jpg",
+      "group": "clothing",
+      "original": {
+        "width": 736,
+        "height": 910,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 593,
+          "url": "/assets/products/clothing/calca-jeans-wide-infantil/calca-jeans-wide-infantil-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 910,
+          "url": "/assets/products/clothing/calca-jeans-wide-infantil/calca-jeans-wide-infantil-736.webp"
+        }
+      ]
+    },
+    "camiseta-marrom-borboleta": {
+      "file": "8e1c3409c50808a3e4f24e89a59ef867.jpg",
+      "group": "clothing",
+      "original": {
+        "width": 720,
+        "height": 834,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 556,
+          "url": "/assets/products/clothing/camiseta-marrom-borboleta/camiseta-marrom-borboleta-480.webp"
+        },
+        {
+          "width": 720,
+          "height": 834,
+          "url": "/assets/products/clothing/camiseta-marrom-borboleta/camiseta-marrom-borboleta-720.webp"
+        }
+      ]
+    },
+    "camiseta-oversized-college-23": {
+      "file": "8f1b9ea95ec22bcef31f6ca49ad07d20.jpg",
+      "group": "clothing",
+      "original": {
+        "width": 736,
+        "height": 980,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 639,
+          "url": "/assets/products/clothing/camiseta-oversized-college-23/camiseta-oversized-college-23-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 980,
+          "url": "/assets/products/clothing/camiseta-oversized-college-23/camiseta-oversized-college-23-736.webp"
+        }
+      ]
+    },
+    "kit-correntes-aneis-prata": {
+      "file": "92adf531f90a90ba6688f53bcd76da7c.jpg",
+      "group": "accessories",
+      "original": {
+        "width": 736,
+        "height": 1307,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 852,
+          "url": "/assets/products/accessories/kit-correntes-aneis-prata/kit-correntes-aneis-prata-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 1307,
+          "url": "/assets/products/accessories/kit-correntes-aneis-prata/kit-correntes-aneis-prata-736.webp"
+        }
+      ]
+    },
+    "jardineira-infantil-veludo-bege": {
+      "file": "93fcb305dffdf1d0ac6541053d3cb2aa.jpg",
+      "group": "clothing",
+      "original": {
+        "width": 405,
+        "height": 539,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 405,
+          "height": 539,
+          "url": "/assets/products/clothing/jardineira-infantil-veludo-bege/jardineira-infantil-veludo-bege-405.webp"
+        }
+      ]
+    },
+    "camiseta-basica-branca-masculina": {
+      "file": "a0272b708b37b3af3fba0f0ed534db85.jpg",
+      "group": "clothing",
+      "original": {
+        "width": 735,
+        "height": 1105,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 722,
+          "url": "/assets/products/clothing/camiseta-basica-branca-masculina/camiseta-basica-branca-masculina-480.webp"
+        },
+        {
+          "width": 735,
+          "height": 1105,
+          "url": "/assets/products/clothing/camiseta-basica-branca-masculina/camiseta-basica-branca-masculina-735.webp"
+        }
+      ]
+    },
+    "camisa-esportiva-preta-rosa": {
+      "file": "a1644998b1a81257838a3d696235ba3c.jpg",
+      "group": "clothing",
+      "original": {
+        "width": 736,
+        "height": 1104,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 720,
+          "url": "/assets/products/clothing/camisa-esportiva-preta-rosa/camisa-esportiva-preta-rosa-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 1104,
+          "url": "/assets/products/clothing/camisa-esportiva-preta-rosa/camisa-esportiva-preta-rosa-736.webp"
+        }
+      ]
+    },
+    "conjunto-infantil-moletom-rosa-lacos": {
+      "file": "a2a7be123cadbad51947e3a7c8181934.jpg",
+      "group": "clothing",
+      "original": {
+        "width": 736,
+        "height": 883,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 576,
+          "url": "/assets/products/clothing/conjunto-infantil-moletom-rosa-lacos/conjunto-infantil-moletom-rosa-lacos-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 883,
+          "url": "/assets/products/clothing/conjunto-infantil-moletom-rosa-lacos/conjunto-infantil-moletom-rosa-lacos-736.webp"
+        }
+      ]
+    },
+    "vestido-longo-floral-azul": {
+      "file": "a3c634128b87e17763496cded6641d3b.jpg",
+      "group": "clothing",
+      "original": {
+        "width": 502,
+        "height": 1000,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 956,
+          "url": "/assets/products/clothing/vestido-longo-floral-azul/vestido-longo-floral-azul-480.webp"
+        },
+        {
+          "width": 502,
+          "height": 1000,
+          "url": "/assets/products/clothing/vestido-longo-floral-azul/vestido-longo-floral-azul-502.webp"
+        }
+      ]
+    },
+    "bone-aba-reta-creme-bordado": {
+      "file": "a45614a67d9154ac33729c0c49d20f27.jpg",
+      "group": "accessories",
+      "original": {
+        "width": 736,
+        "height": 920,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 600,
+          "url": "/assets/products/accessories/bone-aba-reta-creme-bordado/bone-aba-reta-creme-bordado-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 920,
+          "url": "/assets/products/accessories/bone-aba-reta-creme-bordado/bone-aba-reta-creme-bordado-736.webp"
+        }
+      ]
+    },
+    "moletom-meio-ziper-cinza-preto": {
+      "file": "a4f697cc40d6d764b50adedb15f0e48b.jpg",
+      "group": "clothing",
+      "original": {
+        "width": 736,
+        "height": 1308,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 853,
+          "url": "/assets/products/clothing/moletom-meio-ziper-cinza-preto/moletom-meio-ziper-cinza-preto-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 1308,
+          "url": "/assets/products/clothing/moletom-meio-ziper-cinza-preto/moletom-meio-ziper-cinza-preto-736.webp"
+        }
+      ]
+    },
+    "tenis-branco-charms": {
+      "file": "a55cd32de899fc77d02e2a5312a1d90f.jpg",
+      "group": "sneakers",
+      "original": {
+        "width": 736,
+        "height": 789,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 515,
+          "url": "/assets/products/sneakers/tenis-branco-charms/tenis-branco-charms-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 789,
+          "url": "/assets/products/sneakers/tenis-branco-charms/tenis-branco-charms-736.webp"
+        }
+      ]
+    },
+    "tenis-cano-medio-verde-menta": {
+      "file": "a9ec990c36d448b4ab27eaca77732de8.jpg",
+      "group": "sneakers",
+      "original": {
+        "width": 736,
+        "height": 880,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 574,
+          "url": "/assets/products/sneakers/tenis-cano-medio-verde-menta/tenis-cano-medio-verde-menta-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 880,
+          "url": "/assets/products/sneakers/tenis-cano-medio-verde-menta/tenis-cano-medio-verde-menta-736.webp"
+        }
+      ]
+    },
+    "calca-track-creme-feminina": {
+      "file": "abb127f2f0354513381b59f41b693e9d.jpg",
+      "group": "clothing",
+      "original": {
+        "width": 736,
+        "height": 980,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 639,
+          "url": "/assets/products/clothing/calca-track-creme-feminina/calca-track-creme-feminina-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 980,
+          "url": "/assets/products/clothing/calca-track-creme-feminina/calca-track-creme-feminina-736.webp"
+        }
+      ]
+    },
+    "colar-camadas-estrela-prata": {
+      "file": "ac225706ca39f253936d7e6addb2bef8.jpg",
+      "group": "accessories",
+      "original": {
+        "width": 736,
+        "height": 1093,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 713,
+          "url": "/assets/products/accessories/colar-camadas-estrela-prata/colar-camadas-estrela-prata-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 1093,
+          "url": "/assets/products/accessories/colar-camadas-estrela-prata/colar-camadas-estrela-prata-736.webp"
+        }
+      ]
+    },
+    "saia-longa-marrom": {
+      "file": "acc4e57fc6d285cac5c94435bf632e60.jpg",
+      "group": "clothing",
+      "original": {
+        "width": 736,
+        "height": 980,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 639,
+          "url": "/assets/products/clothing/saia-longa-marrom/saia-longa-marrom-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 980,
+          "url": "/assets/products/clothing/saia-longa-marrom/saia-longa-marrom-736.webp"
+        }
+      ]
+    },
+    "tenis-skate-preto-branco-rosa": {
+      "file": "acd775e3c2ee62ad83b847e8027f4443.jpg",
+      "group": "sneakers",
+      "original": {
+        "width": 736,
+        "height": 736,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 480,
+          "url": "/assets/products/sneakers/tenis-skate-preto-branco-rosa/tenis-skate-preto-branco-rosa-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 736,
+          "url": "/assets/products/sneakers/tenis-skate-preto-branco-rosa/tenis-skate-preto-branco-rosa-736.webp"
+        }
+      ]
+    },
+    "kit-pulseiras-douradas-pedras": {
+      "file": "b3bd8e2e7121a64672829a918012f0b4.jpg",
+      "group": "accessories",
+      "original": {
+        "width": 736,
+        "height": 1104,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 720,
+          "url": "/assets/products/accessories/kit-pulseiras-douradas-pedras/kit-pulseiras-douradas-pedras-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 1104,
+          "url": "/assets/products/accessories/kit-pulseiras-douradas-pedras/kit-pulseiras-douradas-pedras-736.webp"
+        }
+      ]
+    },
+    "tenis-branco-listras-cinza": {
+      "file": "b4bb3ca3384aa17fb0ba97a920cd07a1.jpg",
+      "group": "sneakers",
+      "original": {
+        "width": 736,
+        "height": 917,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 598,
+          "url": "/assets/products/sneakers/tenis-branco-listras-cinza/tenis-branco-listras-cinza-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 917,
+          "url": "/assets/products/sneakers/tenis-branco-listras-cinza/tenis-branco-listras-cinza-736.webp"
+        }
+      ]
+    },
+    "tenis-chunky-branco-cinza": {
+      "file": "b897498872542d863db5cea89b561ad7.jpg",
+      "group": "sneakers",
+      "original": {
+        "width": 736,
+        "height": 981,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 640,
+          "url": "/assets/products/sneakers/tenis-chunky-branco-cinza/tenis-chunky-branco-cinza-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 981,
+          "url": "/assets/products/sneakers/tenis-chunky-branco-cinza/tenis-chunky-branco-cinza-736.webp"
+        }
+      ]
+    },
+    "tenis-cano-alto-branco-azul": {
+      "file": "ba3ac2b1b2e69af4190da8bdc272e23f.jpg",
+      "group": "sneakers",
+      "original": {
+        "width": 736,
+        "height": 981,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 640,
+          "url": "/assets/products/sneakers/tenis-cano-alto-branco-azul/tenis-cano-alto-branco-azul-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 981,
+          "url": "/assets/products/sneakers/tenis-cano-alto-branco-azul/tenis-cano-alto-branco-azul-736.webp"
+        }
+      ]
+    },
+    "bone-aba-reta-cinza-azul": {
+      "file": "baa0299e8856f529d531fd5ac69b9a23.jpg",
+      "group": "accessories",
+      "original": {
+        "width": 576,
+        "height": 1024,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 853,
+          "url": "/assets/products/accessories/bone-aba-reta-cinza-azul/bone-aba-reta-cinza-azul-480.webp"
+        },
+        {
+          "width": 576,
+          "height": 1024,
+          "url": "/assets/products/accessories/bone-aba-reta-cinza-azul/bone-aba-reta-cinza-azul-576.webp"
+        }
+      ]
+    },
+    "colar-cristais-azuis-borboleta": {
+      "file": "bd2562c393c9247efaaefd6af2c22593.jpg",
+      "group": "accessories",
+      "original": {
+        "width": 736,
+        "height": 981,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 640,
+          "url": "/assets/products/accessories/colar-cristais-azuis-borboleta/colar-cristais-azuis-borboleta-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 981,
+          "url": "/assets/products/accessories/colar-cristais-azuis-borboleta/colar-cristais-azuis-borboleta-736.webp"
+        }
+      ]
+    },
+    "bone-estonado-grafite": {
+      "file": "c0ed371a12021c1a03a6295dbb627e1a.jpg",
+      "group": "accessories",
+      "original": {
+        "width": 736,
+        "height": 736,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 480,
+          "url": "/assets/products/accessories/bone-estonado-grafite/bone-estonado-grafite-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 736,
+          "url": "/assets/products/accessories/bone-estonado-grafite/bone-estonado-grafite-736.webp"
+        }
+      ]
+    },
+    "colar-corrente-pingente-onix": {
+      "file": "c101a1f1b1b23b8f507aa698ccc847ab.jpg",
+      "group": "accessories",
+      "original": {
+        "width": 735,
+        "height": 919,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 600,
+          "url": "/assets/products/accessories/colar-corrente-pingente-onix/colar-corrente-pingente-onix-480.webp"
+        },
+        {
+          "width": 735,
+          "height": 919,
+          "url": "/assets/products/accessories/colar-corrente-pingente-onix/colar-corrente-pingente-onix-735.webp"
+        }
+      ]
+    },
+    "calca-wide-bege-feminina": {
+      "file": "c2edf238907a8a122c783bb765fb417b.jpg",
+      "group": "clothing",
+      "original": {
+        "width": 736,
+        "height": 1308,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 853,
+          "url": "/assets/products/clothing/calca-wide-bege-feminina/calca-wide-bege-feminina-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 1308,
+          "url": "/assets/products/clothing/calca-wide-bege-feminina/calca-wide-bege-feminina-736.webp"
+        }
+      ]
+    },
+    "bone-cinco-paineis-preto": {
+      "file": "d071c1b80266f53fa23ae75293953384.jpg",
+      "group": "accessories",
+      "original": {
+        "width": 736,
+        "height": 1308,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 853,
+          "url": "/assets/products/accessories/bone-cinco-paineis-preto/bone-cinco-paineis-preto-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 1308,
+          "url": "/assets/products/accessories/bone-cinco-paineis-preto/bone-cinco-paineis-preto-736.webp"
+        }
+      ]
+    },
+    "camiseta-oversized-gatinho": {
+      "file": "d140a0c57ffe9de0c4270913b76729fd.jpg",
+      "group": "clothing",
+      "original": {
+        "width": 736,
+        "height": 993,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 648,
+          "url": "/assets/products/clothing/camiseta-oversized-gatinho/camiseta-oversized-gatinho-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 993,
+          "url": "/assets/products/clothing/camiseta-oversized-gatinho/camiseta-oversized-gatinho-736.webp"
+        }
+      ]
+    },
+    "conjunto-infantil-amarelo-jeans": {
+      "file": "d3bc6a0e3b874d3badb680ec5ececb8a.jpg",
+      "group": "clothing",
+      "original": {
+        "width": 736,
+        "height": 980,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 639,
+          "url": "/assets/products/clothing/conjunto-infantil-amarelo-jeans/conjunto-infantil-amarelo-jeans-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 980,
+          "url": "/assets/products/clothing/conjunto-infantil-amarelo-jeans/conjunto-infantil-amarelo-jeans-736.webp"
+        }
+      ]
+    },
+    "saia-longa-camadas-branca": {
+      "file": "d4b8984c3387e351f6f4d36a1272df54.jpg",
+      "group": "clothing",
+      "original": {
+        "width": 735,
+        "height": 1074,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 701,
+          "url": "/assets/products/clothing/saia-longa-camadas-branca/saia-longa-camadas-branca-480.webp"
+        },
+        {
+          "width": 735,
+          "height": 1074,
+          "url": "/assets/products/clothing/saia-longa-camadas-branca/saia-longa-camadas-branca-735.webp"
+        }
+      ]
+    },
+    "short-cargo-preto-feminino": {
+      "file": "d884725decec694cc78f24883105caef.jpg",
+      "group": "clothing",
+      "original": {
+        "width": 736,
+        "height": 1104,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 720,
+          "url": "/assets/products/clothing/short-cargo-preto-feminino/short-cargo-preto-feminino-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 1104,
+          "url": "/assets/products/clothing/short-cargo-preto-feminino/short-cargo-preto-feminino-736.webp"
+        }
+      ]
+    },
+    "conjunto-infantil-camiseta-bermuda-bege": {
+      "file": "d93931f06ea7c1b994e5faf8ad913b9b.jpg",
+      "group": "clothing",
+      "original": {
+        "width": 736,
+        "height": 1104,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 720,
+          "url": "/assets/products/clothing/conjunto-infantil-camiseta-bermuda-bege/conjunto-infantil-camiseta-bermuda-bege-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 1104,
+          "url": "/assets/products/clothing/conjunto-infantil-camiseta-bermuda-bege/conjunto-infantil-camiseta-bermuda-bege-736.webp"
+        }
+      ]
+    },
+    "tenis-branco-roxo": {
+      "file": "da29bb54a3839d6c632cf6805fe5bb52.jpg",
+      "group": "sneakers",
+      "original": {
+        "width": 736,
+        "height": 901,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 588,
+          "url": "/assets/products/sneakers/tenis-branco-roxo/tenis-branco-roxo-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 901,
+          "url": "/assets/products/sneakers/tenis-branco-roxo/tenis-branco-roxo-736.webp"
+        }
+      ]
+    },
+    "camisa-manga-curta-texturizada": {
+      "file": "dd1556b62002918eebb48536faff573c.jpg",
+      "group": "clothing",
+      "original": {
+        "width": 736,
+        "height": 1104,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 720,
+          "url": "/assets/products/clothing/camisa-manga-curta-texturizada/camisa-manga-curta-texturizada-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 1104,
+          "url": "/assets/products/clothing/camisa-manga-curta-texturizada/camisa-manga-curta-texturizada-736.webp"
+        }
+      ]
+    },
+    "calca-moletom-wide-estrelas": {
+      "file": "dee5d5d6d38879a9766e00391184e760.jpg",
+      "group": "clothing",
+      "original": {
+        "width": 736,
+        "height": 980,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 639,
+          "url": "/assets/products/clothing/calca-moletom-wide-estrelas/calca-moletom-wide-estrelas-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 980,
+          "url": "/assets/products/clothing/calca-moletom-wide-estrelas/calca-moletom-wide-estrelas-736.webp"
+        }
+      ]
+    },
+    "sueter-infantil-listrado": {
+      "file": "e13f65a4cc098b3d2074ae867ccf0cea.jpg",
+      "group": "clothing",
+      "original": {
+        "width": 736,
+        "height": 1104,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 720,
+          "url": "/assets/products/clothing/sueter-infantil-listrado/sueter-infantil-listrado-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 1104,
+          "url": "/assets/products/clothing/sueter-infantil-listrado/sueter-infantil-listrado-736.webp"
+        }
+      ]
+    },
+    "bone-trucker-preto-grafico": {
+      "file": "e215e514b7a37d77d526904dd2a61d15.jpg",
+      "group": "accessories",
+      "original": {
+        "width": 736,
+        "height": 980,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 639,
+          "url": "/assets/products/accessories/bone-trucker-preto-grafico/bone-trucker-preto-grafico-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 980,
+          "url": "/assets/products/accessories/bone-trucker-preto-grafico/bone-trucker-preto-grafico-736.webp"
+        }
+      ]
+    },
+    "vestido-longo-estampado-azul": {
+      "file": "eb0989dc953dc402251d068a1fc08553.jpg",
+      "group": "clothing",
+      "original": {
+        "width": 736,
+        "height": 1308,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 853,
+          "url": "/assets/products/clothing/vestido-longo-estampado-azul/vestido-longo-estampado-azul-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 1308,
+          "url": "/assets/products/clothing/vestido-longo-estampado-azul/vestido-longo-estampado-azul-736.webp"
+        }
+      ]
+    },
+    "saia-curta-babados-oliva": {
+      "file": "edf2f6118bc81a179b5239521deee474.jpg",
+      "group": "clothing",
+      "original": {
+        "width": 736,
+        "height": 980,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 639,
+          "url": "/assets/products/clothing/saia-curta-babados-oliva/saia-curta-babados-oliva-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 980,
+          "url": "/assets/products/clothing/saia-curta-babados-oliva/saia-curta-babados-oliva-736.webp"
+        }
+      ]
+    },
+    "camiseta-oversized-blurred": {
+      "file": "f1264012ae63a3c7727b79a32ea05143.jpg",
+      "group": "clothing",
+      "original": {
+        "width": 564,
+        "height": 696,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 592,
+          "url": "/assets/products/clothing/camiseta-oversized-blurred/camiseta-oversized-blurred-480.webp"
+        },
+        {
+          "width": 564,
+          "height": 696,
+          "url": "/assets/products/clothing/camiseta-oversized-blurred/camiseta-oversized-blurred-564.webp"
+        }
+      ]
+    },
+    "kit-pulseiras-prata": {
+      "file": "f16de43f2b1e087f7df44026bd859af7.jpg",
+      "group": "accessories",
+      "original": {
+        "width": 736,
+        "height": 1104,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 720,
+          "url": "/assets/products/accessories/kit-pulseiras-prata/kit-pulseiras-prata-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 1104,
+          "url": "/assets/products/accessories/kit-pulseiras-prata/kit-pulseiras-prata-736.webp"
+        }
+      ]
+    },
+    "calca-track-reta-preta": {
+      "file": "f291220499f1b478e19659393e7b21be.jpg",
+      "group": "clothing",
+      "original": {
+        "width": 591,
+        "height": 1280,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 1040,
+          "url": "/assets/products/clothing/calca-track-reta-preta/calca-track-reta-preta-480.webp"
+        },
+        {
+          "width": 591,
+          "height": 1280,
+          "url": "/assets/products/clothing/calca-track-reta-preta/calca-track-reta-preta-591.webp"
+        }
+      ]
+    },
+    "saia-midi-assimetrica-floral-rosa": {
+      "file": "f34c9357874aa87e564c825a23a0c573.jpg",
+      "group": "clothing",
+      "original": {
+        "width": 736,
+        "height": 1308,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 853,
+          "url": "/assets/products/clothing/saia-midi-assimetrica-floral-rosa/saia-midi-assimetrica-floral-rosa-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 1308,
+          "url": "/assets/products/clothing/saia-midi-assimetrica-floral-rosa/saia-midi-assimetrica-floral-rosa-736.webp"
+        }
+      ]
+    },
+    "saia-midi-vinho": {
+      "file": "f39d42a32f296b7613f119fe89256cde.jpg",
+      "group": "clothing",
+      "original": {
+        "width": 736,
+        "height": 1307,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 852,
+          "url": "/assets/products/clothing/saia-midi-vinho/saia-midi-vinho-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 1307,
+          "url": "/assets/products/clothing/saia-midi-vinho/saia-midi-vinho-736.webp"
+        }
+      ]
+    },
+    "moletom-bicolor-preto-branco": {
+      "file": "f58334e948163b58ba02f7f64d6dd230.jpg",
+      "group": "clothing",
+      "original": {
+        "width": 736,
+        "height": 876,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 571,
+          "url": "/assets/products/clothing/moletom-bicolor-preto-branco/moletom-bicolor-preto-branco-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 876,
+          "url": "/assets/products/clothing/moletom-bicolor-preto-branco/moletom-bicolor-preto-branco-736.webp"
+        }
+      ]
+    },
+    "tenis-cano-baixo-preto-rosa": {
+      "file": "fb0a3b1fb131d9a72d5dcc742a92950c.jpg",
+      "group": "sneakers",
+      "original": {
+        "width": 736,
+        "height": 736,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 480,
+          "url": "/assets/products/sneakers/tenis-cano-baixo-preto-rosa/tenis-cano-baixo-preto-rosa-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 736,
+          "url": "/assets/products/sneakers/tenis-cano-baixo-preto-rosa/tenis-cano-baixo-preto-rosa-736.webp"
+        }
+      ]
+    },
+    "conjunto-infantil-moletom-preto": {
+      "file": "fb1f80e13de75aa61f515b0eb2b0faa1.jpg",
+      "group": "clothing",
+      "original": {
+        "width": 736,
+        "height": 1308,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 853,
+          "url": "/assets/products/clothing/conjunto-infantil-moletom-preto/conjunto-infantil-moletom-preto-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 1308,
+          "url": "/assets/products/clothing/conjunto-infantil-moletom-preto/conjunto-infantil-moletom-preto-736.webp"
+        }
+      ]
+    },
+    "conjunto-infantil-moletom-caramelo": {
+      "file": "fb66ece9a9ff2a38de554fa55b2ab454.jpg",
+      "group": "clothing",
+      "original": {
+        "width": 736,
+        "height": 1107,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 722,
+          "url": "/assets/products/clothing/conjunto-infantil-moletom-caramelo/conjunto-infantil-moletom-caramelo-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 1107,
+          "url": "/assets/products/clothing/conjunto-infantil-moletom-caramelo/conjunto-infantil-moletom-caramelo-736.webp"
+        }
+      ]
+    }
+  },
+  "hero": {
+    "male": {
+      "original": {
+        "file": "male-original.jpg",
+        "width": 624,
+        "height": 491
+      },
+      "variants": [
+        {
+          "width": 336,
+          "height": 700,
+          "url": "/assets/hero/male/male-700.webp"
+        },
+        {
+          "width": 458,
+          "height": 954,
+          "url": "/assets/hero/male/male-954.webp"
+        }
+      ]
+    },
+    "female": {
+      "original": {
+        "file": "female-original.jpg",
+        "width": 452,
+        "height": 679
+      },
+      "variants": [
+        {
+          "width": 372,
+          "height": 700,
+          "url": "/assets/hero/female/female-700.webp"
+        },
+        {
+          "width": 716,
+          "height": 1348,
+          "url": "/assets/hero/female/female-1348.webp"
+        }
+      ]
+    },
+    "boys": {
+      "original": {
+        "file": "boy-original.jpg",
+        "width": 300,
+        "height": 450
+      },
+      "variants": [
+        {
+          "width": 312,
+          "height": 700,
+          "url": "/assets/hero/boys/boy-700.webp"
+        },
+        {
+          "width": 390,
+          "height": 874,
+          "url": "/assets/hero/boys/boy-874.webp"
+        }
+      ]
+    },
+    "girls": {
+      "original": {
+        "file": "girl-original.png",
+        "width": 360,
+        "height": 684
+      },
+      "variants": [
+        {
+          "width": 254,
+          "height": 700,
+          "url": "/assets/hero/girls/girl-700.webp"
+        },
+        {
+          "width": 422,
+          "height": 1164,
+          "url": "/assets/hero/girls/girl-1164.webp"
+        }
+      ]
+    }
+  },
+  "references": {
+    "homepage": {
+      "url": "/assets/references/homepage-template.jpg",
+      "width": 736,
+      "height": 1238
+    },
+    "product": {
+      "url": "/assets/references/product-template.jpg",
+      "width": 736,
+      "height": 414
+    }
+  },
+  "editorial": {
+    "acessorios": {
+      "file": "30b442a6352fdb6c71d14c8dc17f1b29.jpg",
+      "original": {
+        "width": 736,
+        "height": 1104,
+        "format": "jpeg"
+      },
+      "variants": [
+        {
+          "width": 480,
+          "height": 720,
+          "url": "/assets/editorial/acessorios-composicao-480.webp"
+        },
+        {
+          "width": 736,
+          "height": 1104,
+          "url": "/assets/editorial/acessorios-composicao-736.webp"
+        }
+      ]
+    }
+  },
+  "generatedAt": "2026-10-16T18:25:39.489Z"
+}
