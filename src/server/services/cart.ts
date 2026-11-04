@@ -91,7 +91,9 @@ export interface QuoteInput {
   shippingOptionId?: string | null;
 }
 
-export function quoteCart(input: QuoteInput): CartQuoteDTO & { shippingOptions: ShippingOptionDTO[]; shippingMessage: string | null; shippingConfigured: boolean } {
+export type FullQuote = CartQuoteDTO & { shippingOptions: ShippingOptionDTO[]; shippingMessage: string | null; shippingConfigured: boolean };
+
+export async function quoteCart(input: QuoteInput): Promise<FullQuote> {
   const lines = buildLines(input.items);
   const purchasable = lines.filter((l) => !l.issue);
   const subtotal = purchasable.reduce((s, l) => s + l.lineTotalCents, 0);
@@ -107,7 +109,7 @@ export function quoteCart(input: QuoteInput): CartQuoteDTO & { shippingOptions: 
   let shippingMessage: string | null = null;
   let shippingConfigured = true;
   if (input.cep) {
-    const q = quoteShipping(input.cep, subtotal - discount);
+    const q = await quoteShipping(input.cep, subtotal - discount, purchasable.map((l) => ({ variantId: l.variantId, quantity: l.quantity })));
     shippingOptions = q.options;
     shippingMessage = q.message;
     shippingConfigured = q.configured;
@@ -142,7 +144,7 @@ export function setUserCartItems(userId: string, items: CartItemInput[]): void {
   const db = getDb();
   const clean = normalizeItems(items);
   db.tx(() => {
-    db.run('INSERT INTO carts (user_id) VALUES (?) ON CONFLICT(user_id) DO UPDATE SET updated_at = ?', userId, nowIso());
+    db.run('INSERT INTO carts (user_id) VALUES (?) ON CONFLICT(user_id) DO UPDATE SET updated_at = ?, reminder_sent_at = NULL', userId, nowIso());
     const cart = db.get<{ id: number }>('SELECT id FROM carts WHERE user_id = ?', userId)!;
     db.run('DELETE FROM cart_items WHERE cart_id = ?', cart.id);
     const existing = new Set(clean.length ? db.all<{ id: number }>(`SELECT id FROM product_variants WHERE id IN (${clean.map(() => '?').join(',')})`, ...clean.map((c) => c.variantId)).map((r) => r.id) : []);

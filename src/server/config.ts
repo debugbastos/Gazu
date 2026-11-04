@@ -45,8 +45,29 @@ const schema = z.object({
   MP_ENABLED_METHODS: z.string().default('pix,credit_card'),
   MP_MAX_INSTALLMENTS: z.coerce.number().int().min(1).max(12).default(1),
   PIX_EXPIRATION_MINUTES: z.coerce.number().int().min(5).max(1440).default(30),
+  BOLETO_DAYS: z.coerce.number().int().min(1).max(30).default(3),
   // Frete
-  SHIPPING_PROVIDER: z.enum(['manual', 'demo']).default('manual'),
+  SHIPPING_PROVIDER: z.enum(['manual', 'demo', 'melhorenvio']).default('manual'),
+  SHIPPING_ORIGIN_CEP: z.string().regex(/^\d{5}-?\d{3}$/).optional(),
+  MELHORENVIO_TOKEN: z.string().optional(),
+  MELHORENVIO_ENV: z.enum(['sandbox', 'production']).default('sandbox'),
+  MELHORENVIO_USER_AGENT: z.string().default('GAZU Store (contato@exemplo.com)'),
+  MELHORENVIO_SERVICES: z.string().default(''),
+  /** Embalagem padrão usada na cotação quando o produto não tem dimensões cadastradas (cm / gramas). */
+  PACKAGE_DEFAULT: z.string().default('30x20x10x500'),
+  // WhatsApp Business (API oficial da Meta — Cloud API)
+  WHATSAPP_TOKEN: z.string().optional(),
+  WHATSAPP_PHONE_NUMBER_ID: z.string().optional(),
+  WHATSAPP_VERIFY_TOKEN: z.string().optional(),
+  WHATSAPP_APP_SECRET: z.string().optional(),
+  WHATSAPP_API_VERSION: z.string().default('v21.0'),
+  // Monitoramento, alertas e backups
+  ALERT_EMAIL: z.string().email().optional().or(z.literal('')),
+  ALERT_WEBHOOK_URL: z.string().url().optional().or(z.literal('')),
+  BACKUP_DIR: z.string().default('backups'),
+  BACKUP_INTERVAL_HOURS: z.coerce.number().int().min(0).max(168).default(24),
+  BACKUP_RETENTION: z.coerce.number().int().min(1).max(365).default(14),
+  JOBS_ENABLED: bool.default('true'),
   // E-mail
   EMAIL_PROVIDER: z.enum(['console', 'resend']).default('console'),
   RESEND_API_KEY: z.string().optional(),
@@ -54,6 +75,11 @@ const schema = z.object({
   // Pedidos
   ORDER_PAYMENT_WINDOW_MINUTES: z.coerce.number().int().min(10).max(2880).default(60),
 });
+
+// Nomes alternativos aceitos (convenção do PRD): MERCADOPAGO_* → MP_*.
+for (const [alias, key] of [['MERCADOPAGO_ACCESS_TOKEN', 'MP_ACCESS_TOKEN'], ['MERCADOPAGO_PUBLIC_KEY', 'MP_PUBLIC_KEY'], ['MERCADOPAGO_WEBHOOK_SECRET', 'MP_WEBHOOK_SECRET']] as const) {
+  if (!process.env[key] && process.env[alias]) process.env[key] = process.env[alias];
+}
 
 const parsed = schema.safeParse(process.env);
 if (!parsed.success) {
@@ -74,6 +100,9 @@ if (isProd) {
 /** Segredo usado para assinar cookies temporários (state do OAuth etc.). */
 export const sessionSecret = env.SESSION_SECRET ?? 'dev-only-insecure-secret-change-me';
 
+const [pkgL, pkgW, pkgH, pkgG] = env.PACKAGE_DEFAULT.split('x').map(Number);
+export const defaultPackage = { lengthCm: pkgL || 30, widthCm: pkgW || 20, heightCm: pkgH || 10, weightGrams: pkgG || 500 };
+
 export const features = {
   googleAuth: Boolean(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET),
   mercadoPago: env.PAYMENT_PROVIDER === 'mercadopago' && Boolean(env.MP_ACCESS_TOKEN),
@@ -81,5 +110,10 @@ export const features = {
   mercadoPagoPix: env.PAYMENT_PROVIDER === 'mercadopago' && Boolean(env.MP_ACCESS_TOKEN) && env.MP_ENABLED_METHODS.split(',').includes('pix'),
   demoPayments: env.PAYMENT_PROVIDER === 'demo' && !isProd,
   demoShipping: env.SHIPPING_PROVIDER === 'demo' && !isProd,
+  melhorEnvio: env.SHIPPING_PROVIDER === 'melhorenvio' && Boolean(env.MELHORENVIO_TOKEN && env.SHIPPING_ORIGIN_CEP),
+  mercadoPagoBoleto: env.PAYMENT_PROVIDER === 'mercadopago' && Boolean(env.MP_ACCESS_TOKEN) && env.MP_ENABLED_METHODS.split(',').includes('boleto'),
+  whatsappApi: Boolean(env.WHATSAPP_TOKEN && env.WHATSAPP_PHONE_NUMBER_ID),
+  whatsappWebhook: Boolean(env.WHATSAPP_VERIFY_TOKEN && env.WHATSAPP_APP_SECRET),
+  email: env.EMAIL_PROVIDER === 'resend' && Boolean(env.RESEND_API_KEY),
   webhookSignature: Boolean(env.MP_WEBHOOK_SECRET),
 };

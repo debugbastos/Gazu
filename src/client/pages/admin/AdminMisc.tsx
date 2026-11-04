@@ -203,92 +203,42 @@ export function AdminShipping() {
 }
 
 // ---------- Clientes ----------
+interface CustomerRow { id: string; email: string; role: string; staffRole: string | null; isGuest: number; anonymizedAt: string | null; createdAt: string; emailVerified: number; name: string | null; orders: number; spentCents: number }
 export function AdminCustomers() {
+  const { notify, user } = useStore();
   const [q, setQ] = useState('');
   const [query, setQuery] = useState('');
-  const { data, error, loading, reload } = useApi<{ customers: { id: string; email: string; role: string; createdAt: string; emailVerified: number; name: string | null; orders: number }[] }>(`/api/admin/customers?q=${encodeURIComponent(query)}`);
+  const { data, error, loading, reload } = useApi<{ customers: CustomerRow[] }>(`/api/admin/customers?q=${encodeURIComponent(query)}`);
+  const canPrivacy = Boolean(user?.permissions?.includes('customers.privacy'));
+  const anonymize = async (c: CustomerRow) => {
+    const typed = window.prompt(`Anonimizar a conta ${c.email}? Esta ação é irreversível. Pedidos e pagamentos são mantidos sem dados de contato (obrigação fiscal).\n\nDigite ANONIMIZAR para confirmar:`);
+    if (typed !== 'ANONIMIZAR') return;
+    try { await api.post(`/api/admin/privacy/users/${c.id}/anonymize`, { confirm: 'ANONIMIZAR' }); notify('Conta anonimizada.', 'success'); reload(); } catch (e) { notify(errorMessage(e), 'error'); }
+  };
   return (
     <AdminShell title="Clientes">
       <form role="search" className="admin-search" onSubmit={(e) => { e.preventDefault(); setQuery(q.trim()); }}>
         <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Nome ou e-mail" aria-label="Buscar clientes" />
       </form>
-      <p className="muted small admin-intro">Exibimos apenas dados necessários à operação. Senhas e tokens nunca são acessíveis pelo painel.</p>
+      <p className="muted small admin-intro">Exibimos apenas dados necessários à operação. Senhas, tokens e dados de cartão nunca são acessíveis pelo painel. "Visitante" = comprou sem cadastro.</p>
       {loading && !data ? <Loading /> : error ? <ErrorState message={error} onRetry={reload} /> : !data?.customers.length ? <EmptyState title="Nenhum cliente encontrado" /> : (
         <div className="admin-table-wrap">
           <table className="admin-table">
-            <thead><tr><th>Cliente</th><th>E-mail</th><th>Pedidos</th><th>Cadastro</th><th>Perfil</th></tr></thead>
+            <thead><tr><th>Cliente</th><th>E-mail</th><th>Pedidos</th><th>Comprado (pago)</th><th>Cadastro</th><th>Perfil</th>{canPrivacy ? <th>LGPD</th> : null}</tr></thead>
             <tbody>{data.customers.map((c) => (
-              <tr key={c.id}><td>{c.name ?? '—'}</td><td>{c.email}{c.emailVerified ? '' : <small className="muted"> (não confirmado)</small>}</td><td>{c.orders}</td><td>{formatDate(c.createdAt)}</td><td>{c.role === 'admin' ? <span className="status status--processing">Admin</span> : 'Cliente'}</td></tr>
+              <tr key={c.id} className={c.anonymizedAt ? 'is-muted' : ''}>
+                <td>{c.name ?? '—'}</td>
+                <td>{c.email}{c.emailVerified ? '' : <small className="muted"> (não confirmado)</small>}</td>
+                <td>{c.orders}</td>
+                <td>{formatPrice(c.spentCents)}</td>
+                <td>{formatDate(c.createdAt)}</td>
+                <td>{c.anonymizedAt ? <span className="status">Anonimizado</span> : c.role === 'admin' ? <span className="status status--processing">Equipe{c.staffRole ? ` · ${c.staffRole}` : ''}</span> : c.isGuest ? <span className="status">Visitante</span> : 'Cliente'}</td>
+                {canPrivacy ? <td className="admin-row">{!c.anonymizedAt ? <><a className="link-btn" href={`/api/admin/privacy/users/${c.id}/export`} download>Exportar</a>{c.role !== 'admin' ? <button className="link-btn" onClick={() => void anonymize(c)}>Anonimizar</button> : null}</> : null}</td> : null}
+              </tr>
             ))}</tbody>
           </table>
         </div>
       )}
-    </AdminShell>
-  );
-}
-
-// ---------- Configurações da loja ----------
-type Settings = PublicConfigDTO['settings'];
-
-export function AdminSettings() {
-  const { notify } = useStore();
-  const { data, error, loading, reload } = useApi<Settings>('/api/admin/settings');
-  const [s, setS] = useState<Settings | null>(null);
-  const [saving, setSaving] = useState(false);
-  useEffect(() => { if (data) setS(data); }, [data]);
-  const save = async (e: FormEvent) => {
-    e.preventDefault();
-    if (!s) return;
-    setSaving(true);
-    try {
-      const clean = { ...s, announcements: s.announcements.map((a) => a.trim()).filter(Boolean), heroTagline: s.heroTagline.map((a) => a.trim()).filter(Boolean), heroCollectionLabel: s.heroCollectionLabel.map((a) => a.trim()).filter(Boolean) };
-      setS(await api.put<Settings>('/api/admin/settings', clean));
-      notify('Configurações salvas. Recarregue a loja para ver as mudanças.', 'success');
-    } catch (err) { notify(errorMessage(err), 'error'); } finally { setSaving(false); }
-  };
-  const lines = (v: string) => v.split('\n');
-  return (
-    <AdminShell title="Configurações">
-      {loading && !s ? <Loading /> : error && !s ? <ErrorState message={error} onRetry={reload} /> : s ? (
-        <form className="admin-form" onSubmit={save}>
-          <section className="admin-card">
-            <h2>Comunicação</h2>
-            <div className="admin-fields">
-              <TextareaField label="Mensagens da barra de anúncio (uma por linha, até 5)" value={s.announcements.join('\n')} onChange={(e) => setS({ ...s, announcements: lines(e.target.value).slice(0, 5) })} className="span-2" />
-              <TextareaField label="Chamada do hero (uma linha por verso)" value={s.heroTagline.join('\n')} onChange={(e) => setS({ ...s, heroTagline: lines(e.target.value).slice(0, 4) })} />
-              <TextareaField label="Selo de coleção do hero (uma linha por verso)" value={s.heroCollectionLabel.join('\n')} onChange={(e) => setS({ ...s, heroCollectionLabel: lines(e.target.value).slice(0, 4) })} />
-              <div className="span-2"><Checkbox checked={s.showAccessoriesOnHome} onChange={(v) => setS({ ...s, showAccessoriesOnHome: v })} label="Exibir a vitrine de acessórios na home" /></div>
-            </div>
-            <p className="muted small">Não anuncie frete grátis, descontos ou prazos que não estejam configurados no sistema.</p>
-          </section>
-          <section className="admin-card">
-            <h2>Atendimento</h2>
-            <div className="admin-fields">
-              <Field label="E-mail" type="email" value={s.contact.email} onChange={(e) => setS({ ...s, contact: { ...s.contact, email: e.target.value } })} optional />
-              <Field label="Telefone" value={s.contact.phone} onChange={(e) => setS({ ...s, contact: { ...s.contact, phone: e.target.value } })} optional />
-              <Field label="WhatsApp" value={s.contact.whatsapp} onChange={(e) => setS({ ...s, contact: { ...s.contact, whatsapp: e.target.value } })} optional />
-              <Field label="Horário de atendimento" value={s.contact.serviceHours} onChange={(e) => setS({ ...s, contact: { ...s.contact, serviceHours: e.target.value } })} optional />
-            </div>
-          </section>
-          <section className="admin-card">
-            <h2>Dados da empresa</h2>
-            <div className="admin-fields">
-              <Field label="Razão social" value={s.company.legalName} onChange={(e) => setS({ ...s, company: { ...s.company, legalName: e.target.value } })} optional />
-              <Field label="CNPJ" value={s.company.cnpj} onChange={(e) => setS({ ...s, company: { ...s.company, cnpj: e.target.value } })} optional />
-              <Field label="Endereço" value={s.company.address} onChange={(e) => setS({ ...s, company: { ...s.company, address: e.target.value } })} optional className="span-2" />
-            </div>
-          </section>
-          <section className="admin-card">
-            <h2>Redes sociais</h2>
-            <div className="admin-fields">
-              <Field label="Instagram (URL)" type="url" value={s.social.instagram} onChange={(e) => setS({ ...s, social: { ...s.social, instagram: e.target.value } })} optional />
-              <Field label="TikTok (URL)" type="url" value={s.social.tiktok} onChange={(e) => setS({ ...s, social: { ...s.social, tiktok: e.target.value } })} optional />
-              <Field label="Facebook (URL)" type="url" value={s.social.facebook} onChange={(e) => setS({ ...s, social: { ...s.social, facebook: e.target.value } })} optional />
-            </div>
-          </section>
-          <div className="admin-savebar"><Button size="lg" loading={saving}>Salvar configurações</Button></div>
-        </form>
-      ) : null}
     </AdminShell>
   );
 }

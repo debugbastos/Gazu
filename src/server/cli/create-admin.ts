@@ -25,7 +25,8 @@ const db = getDb();
 db.migrate();
 const existing = db.get<{ id: string; role: string }>('SELECT id, role FROM users WHERE email = ?', email);
 if (existing) {
-  db.run("UPDATE users SET role = 'admin' WHERE id = ?", existing.id);
+  // Promovido pela linha de comando = proprietário(a) (acesso total, inclusive gestão da equipe).
+  db.run("UPDATE users SET role = 'admin', staff_role = 'owner', is_guest = 0 WHERE id = ?", existing.id);
   db.run("INSERT INTO audit_log (actor, action, entity, entity_id) VALUES ('cli', 'user.promote_admin', 'user', ?)", existing.id);
   console.log(`Usuário ${email} promovido a administrador.`);
 } else {
@@ -35,7 +36,7 @@ if (existing) {
   const id = crypto.randomUUID();
   const hash = await hashPassword(pw);
   db.tx(() => {
-    db.run("INSERT INTO users (id, email, password_hash, role, email_verified_at) VALUES (?, ?, ?, 'admin', ?)", id, email, hash, new Date().toISOString());
+    db.run("INSERT INTO users (id, email, password_hash, role, staff_role, email_verified_at) VALUES (?, ?, ?, 'admin', 'owner', ?)", id, email, hash, new Date().toISOString());
     db.run('INSERT INTO profiles (user_id, full_name) VALUES (?, ?)', id, 'Administrador');
     db.run("INSERT INTO audit_log (actor, action, entity, entity_id) VALUES ('cli', 'user.create_admin', 'user', ?)", id);
   });

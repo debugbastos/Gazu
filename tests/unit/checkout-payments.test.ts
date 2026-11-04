@@ -43,7 +43,7 @@ test('assinatura do webhook: válida, adulterada, segredo errado e expirada', ()
 test('mapeamento de status do Mercado Pago', () => {
   assert.equal(mapMpStatus({ status: 'approved', transaction_amount: 10 }), 'approved');
   assert.equal(mapMpStatus({ status: 'pending', transaction_amount: 10 }), 'pending');
-  assert.equal(mapMpStatus({ status: 'in_process', transaction_amount: 10 }), 'pending');
+  assert.equal(mapMpStatus({ status: 'in_process', transaction_amount: 10 }), 'in_process');
   assert.equal(mapMpStatus({ status: 'rejected', transaction_amount: 10 }), 'rejected');
   assert.equal(mapMpStatus({ status: 'cancelled', transaction_amount: 10 }), 'cancelled');
   assert.equal(mapMpStatus({ status: 'refunded', transaction_amount: 10 }), 'refunded');

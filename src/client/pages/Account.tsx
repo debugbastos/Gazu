@@ -3,13 +3,15 @@ import { api, ApiError, errorMessage } from '../lib/api';
 import { useApi, useDocumentTitle } from '../lib/hooks';
 import { Link, useRouter, useSearchParams } from '../lib/router';
 import { useStore } from '../lib/store';
-import { formatCep, formatDate, formatPrice } from '../../shared/format';
+import { formatCep, formatDate, formatDateTime, formatPrice, TICKET_STATUS_LABEL } from '../../shared/format';
 import type { AddressDTO, OrderDTO, ProductCardDTO } from '../../shared/types';
 import { AddressForm, emptyAddress, validateAddress, type AddressValues } from '../components/checkout/AddressForm';
 import { OrderView, StatusBadge } from '../components/account/OrderView';
 import { ProductGrid } from '../components/catalog/ProductCard';
 import { Icon } from '../components/ui/Icon';
-import { Breadcrumbs, Button, ButtonLink, Dialog, EmptyState, ErrorState, Field, Loading, Notice } from '../components/ui/ui';
+import { Breadcrumbs, Button, ButtonLink, Checkbox, Dialog, EmptyState, ErrorState, Field, Loading, Notice, TextareaField } from '../components/ui/ui';
+import { RecentlyViewed, openCookiePreferences } from '../components/content/Editorial';
+import { getConsent } from '../lib/analytics';
 
 /** Garante sessão para páginas privadas (a autorização real é feita no servidor). */
 export function RequireAuth({ children, admin }: { children: ReactNode; admin?: boolean }) {
@@ -28,6 +30,8 @@ const NAV = [
   { href: '/conta/pedidos', label: 'Pedidos', icon: 'bag' as const },
   { href: '/conta/enderecos', label: 'Endereços', icon: 'truck' as const },
   { href: '/favoritos', label: 'Favoritos', icon: 'heart' as const },
+  { href: '/conta/atendimento', label: 'Atendimento', icon: 'chat' as const },
+  { href: '/conta/privacidade', label: 'Privacidade', icon: 'shield' as const },
   { href: '/conta/seguranca', label: 'Segurança', icon: 'lock' as const },
 ];
 
@@ -254,4 +258,91 @@ export function FavoritesPage() {
       ) : <ProductGrid products={items} />}
     </div>
   );
+}
+
+export function AccountTicketsPage() {
+  const { data, error, loading, reload } = useApi<{ tickets: { number: string; subject: string; status: string; category: string; createdAt: string; updatedAt: string }[] }>('/api/account/tickets');
+  return (
+    <AccountShell title="Atendimento">
+      {loading ? <Loading /> : error ? <ErrorState message={error} onRetry={reload} /> : !data?.tickets.length ? (
+        <EmptyState title="Nenhum atendimento aberto" text="Dúvidas sobre produtos, pedidos ou trocas? Fale com a gente." action={<ButtonLink to="/atendimento" variant="secondary" size="sm">Abrir atendimento</ButtonLink>} />
+      ) : (
+        <>
+          <ul className="orders-list">
+            {data.tickets.map((t) => (
+              <li key={t.number}>
+                <Link to={`/atendimento/${t.number}`} className="orders-list__item">
+                  <span className="orders-list__meta"><strong>{t.number} · {t.subject}</strong><small>Atualizado em {formatDateTime(t.updatedAt)}</small></span>
+                  <span className={`status status--t-${t.status}`}>{TICKET_STATUS_LABEL[t.status] ?? t.status}</span>
+                  <Icon name="chevronRight" size={18} />
+                </Link>
+              </li>
+            ))}
+          </ul>
+          <ButtonLink to="/atendimento" variant="secondary" size="sm">Novo atendimento</ButtonLink>
+        </>
+      )}
+    </AccountShell>
+  );
+}
+
+interface PrivacyInfo { marketingOptIn: boolean; newsletter: string | null; analytics: { granted: boolean; at: string } | null; requests: { id: number; type: string; status: string; createdAt: string; completedAt: string | null }[] }
+
+export function AccountPrivacyPage() {
+  const { notify } = useStore();
+  const { data, error, loading, reload, setData } = useApi<PrivacyInfo>('/api/account/privacy');
+  const [deletion, setDeletion] = useState(false);
+  const [note, setNote] = useState('');
+  const [busy, setBusy] = useState(false);
+  const consent = getConsent();
+  const setMarketing = async (optIn: boolean) => {
+    try { await api.put('/api/account/marketing', { optIn }); if (data) setData({ ...data, marketingOptIn: optIn, newsletter: optIn ? data.newsletter : data.newsletter ? 'unsubscribed' : null }); notify(optIn ? 'Comunicações de marketing autorizadas.' : 'Você não receberá mais e-mails de marketing.', 'success'); } catch (e) { notify(errorMessage(e), 'error'); }
+  };
+  const requestDeletion = async (e: FormEvent) => {
+    e.preventDefault();
+    setBusy(true);
+    try { const r = await api.post<{ message: string }>('/api/account/privacy/requests', { type: 'deletion', note: note || null }); notify(r.message, 'success'); setDeletion(false); reload(); } catch (err) { notify(errorMessage(err), 'error'); } finally { setBusy(false); }
+  };
+  const TYPE: Record<string, string> = { export: 'Cópia dos dados', deletion: 'Exclusão da conta', correction: 'Correção de dados' };
+  const STATUS: Record<string, string> = { requested: 'Recebida', in_review: 'Em análise', completed: 'Concluída', rejected: 'Recusada' };
+  return (
+    <AccountShell title="Privacidade">
+      {loading ? <Loading /> : error ? <ErrorState message={error} onRetry={reload} /> : data ? (
+        <div className="account-grid">
+          <section className="panel">
+            <h2>Comunicações</h2>
+            <Checkbox checked={data.marketingOptIn} onChange={(v) => void setMarketing(v)} label="Quero receber novidades, lançamentos e lembretes de carrinho por e-mail" />
+            <p className="muted small">E-mails sobre seus pedidos (confirmação, pagamento, envio) são sempre enviados, pois fazem parte da compra.</p>
+            <h2>Cookies de análise</h2>
+            <p className="muted small">Neste navegador: {consent ? (consent.analytics ? 'permitidos' : 'somente essenciais') : 'ainda sem escolha'}.</p>
+            <Button variant="secondary" size="sm" onClick={openCookiePreferences}>Alterar preferência</Button>
+          </section>
+          <section className="panel">
+            <h2>Seus dados (LGPD)</h2>
+            <p className="muted small">Você pode baixar uma cópia dos dados pessoais que mantemos sobre você ou pedir a exclusão da conta.</p>
+            <div className="btn-row">
+              <a className="btn btn--secondary btn--sm" href="/api/account/privacy/export" download><span className="btn__label">Baixar meus dados (JSON)</span><Icon name="download" size={16} /></a>
+              <Button variant="ghost" size="sm" onClick={() => setDeletion(true)}>Pedir exclusão da conta</Button>
+            </div>
+            {data.requests.length ? (
+              <ul className="pay-history">
+                {data.requests.map((r) => <li key={r.id}><span>{TYPE[r.type] ?? r.type}</span><span className="tag">{STATUS[r.status] ?? r.status}</span><small>{formatDate(r.createdAt)}</small></li>)}
+              </ul>
+            ) : null}
+          </section>
+        </div>
+      ) : null}
+      <Dialog open={deletion} onClose={() => setDeletion(false)} title="Pedir exclusão da conta">
+        <form className="dialog__body form-stack" onSubmit={requestDeletion}>
+          <p>Ao concluir, sua conta é anonimizada: e-mail, nome, telefone, endereços salvos, favoritos e inscrições são removidos. Pedidos e pagamentos são mantidos pelo prazo exigido pela legislação fiscal, sem vínculo com seus dados de contato.</p>
+          <TextareaField label="Observação (opcional)" value={note} onChange={(e) => setNote(e.target.value)} rows={3} maxLength={1000} />
+          <div className="dialog__actions"><Button type="button" variant="ghost" onClick={() => setDeletion(false)}>Cancelar</Button><Button variant="danger" loading={busy}>Confirmar pedido</Button></div>
+        </form>
+      </Dialog>
+    </AccountShell>
+  );
+}
+
+export function AccountRecentPage() {
+  return <AccountShell title="Vistos recentemente"><RecentlyViewed title="Produtos que você viu" /></AccountShell>;
 }

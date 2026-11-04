@@ -18,7 +18,8 @@ export function registerCartRoutes(r: Router): void {
   r.post('/api/shipping/quote', async (ctx) => {
     rateLimit(`ship:${ctx.ip}`, 60, 60_000);
     const body = await ctx.body(z.object({ cep: cepSchema, subtotalCents: z.number().int().min(0).max(100_000_000).default(0) }));
-    return quoteShipping(body.cep, body.subtotalCents);
+    const items = z.array(z.object({ variantId: z.number().int().positive(), quantity: z.number().int().min(1).max(20) })).max(50).optional().parse((JSON.parse(ctx.rawBody?.toString('utf8') || '{}') as { items?: unknown }).items);
+    return quoteShipping(body.cep, body.subtotalCents, items ?? []);
   });
 
   // Carrinho persistido para clientes autenticados

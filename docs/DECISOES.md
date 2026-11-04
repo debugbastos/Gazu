@@ -44,3 +44,78 @@ Inter Display (títulos) + Inter (interface), licença SIL OFL. A **Referência 
 - Nomes descritivos, **sem marcas de terceiros**, apesar de várias fotos exibirem logotipos (esportivos, automobilísticos, de times).
 - Preço, estoque e cor são ilustrativos (`is_demo = 1`, `color_confirmed = 0`), sinalizados na loja e excluídos da receita no painel.
 - Dois produtos ficam propositalmente esgotados para demonstrar esse estado.
+
+---
+
+## Ciclo 2 — Prompt Master Definitivo (outubro/2026)
+
+### Banco: SQLite agora, caminho para PostgreSQL documentado
+O Prompt Master sugere PostgreSQL/Supabase "ou solução equivalente compatível". O registro npm continuou indisponível
+(sem driver `pg`/Supabase), então o banco segue em SQLite (`node:sqlite`) com **migrations versionadas**
+(`db/migrations/001–003`), chaves estrangeiras, `CHECK`, índices, `UNIQUE` para idempotência e transações
+`BEGIN IMMEDIATE` para estoque. RLS não se aplica ao SQLite: **toda autorização é feita no servidor** (cliente só acessa
+linhas com o próprio `user_id` ou com token assinado de visitante; painel exige permissão por rota). Migração para Postgres:
+`docs/ESCALABILIDADE.md`.
+
+### Permissões por função (servidor)
+Seis funções (`owner`, `manager`, `catalog`, `finance`, `support`, `marketing`) com permissões explícitas em
+`src/server/auth/permissions.ts`. Toda rota `/api/admin` chama `requirePermission()`; negações são auditadas. A interface
+apenas esconde o que a pessoa não pode usar. O proprietário inicial é criado pela linha de comando; os demais membros criam a
+própria conta e recebem a função pelo painel (sem contas compartilhadas, sem senha definida por terceiros).
+
+### Compra sem cadastro
+Usuário técnico `is_guest = 1` por e-mail + token por pedido (hash em `orders.guest_access_hash`), entregue por link no
+e-mail e por cookie HttpOnly assinado no navegador da compra. Cadastrar-se depois com o mesmo e-mail exige ativação pelo
+link enviado (prova de posse do e-mail), impedindo que alguém veja pedidos alheios.
+
+### Eventos de domínio após o commit
+Notificações, e-mails e atualizações derivadas reagem a eventos (`emit()` → `db.onCommit`), executados só depois de a
+transação confirmar. Assim um rollback nunca dispara e-mail de "pagamento aprovado". Deduplicação por `notifications.dedupe_key`.
+
+### Pagamentos: máquina de estados e fonte de verdade
+Transições permitidas explícitas (`canTransition`), notificações fora de ordem são ignoradas, aprovação implícita
+(ex.: `refunded` antes de `approved`) é tratada. O status vem sempre da consulta à API do provedor; a chave do evento inclui
+`x-request-id` e `ts` para idempotência. Estornos ficam em `refunds` e só são "approved" com confirmação do provedor.
+
+### Financeiro
+Receita reconhecida na aprovação do pagamento; estorno na confirmação; custo do produto e da embalagem copiados para o
+pedido no momento da venda (histórico estável). Qualquer custo desconhecido torna o indicador nulo — nunca estimado.
+Fórmulas: `docs/FORMULAS-FINANCEIRAS.md`.
+
+### Analytics próprio (first-party) com consentimento
+Sem ferramentas de terceiros (sem chave, sem dependência e sem envio de dados a outras empresas): eventos só são enviados
+depois do consentimento, com identificador de sessão anônimo, sem nome/e-mail/IP e com textos de busca higienizados.
+Compras e receita vêm dos pagamentos aprovados, nunca da página de sucesso. Integração com GA4/Meta pode ser adicionada no
+mesmo ponto (`src/client/lib/analytics.ts`) respeitando o consentimento.
+
+### Rotinas, monitoramento e backups no próprio processo
+Agendador interno simples (`setInterval`, sem sobreposição, registro em `job_runs`) ligado por `JOBS_ENABLED` em uma
+única instância. Backups com `VACUUM INTO` + verificação por restauração em arquivo temporário. Alertas por e-mail/webhook.
+Cópia externa e monitor de disponibilidade dependem da hospedagem (documentados, não ativos).
+
+### Melhor Envio e WhatsApp Cloud API
+Escolhidos por serem as integrações oficiais mais comuns para lojas brasileiras de pequeno porte (cotação multi-transportadora
+com etiqueta; API oficial da Meta). Ambos implementados contra a API pública documentada e testados com respostas simuladas;
+ativação exige contas da GAZU (`docs/INTEGRACOES.md`). Sem WhatsApp API o site oferece só o link `wa.me` — nunca apresentado
+como atendimento automatizado.
+
+### Divisão de código
+O painel administrativo é carregado sob demanda (`React.lazy` + `splitting` do esbuild): visitantes não baixam os ~180 KB
+do painel. Medido neste build (minificado, antes de gzip): sem divisão, 603 KB; com divisão, a loja carrega ~430 KB
+(pacote principal 375 KB + bloco compartilhado 55 KB) e o painel (~185 KB) só é baixado em `/admin`.
+
+### Kit de marca gerado por script
+`scripts/assets/build-brand-kit.mjs` gera logotipos, favicons, ícones, imagens sociais e materiais impressos (SVG/PDF em
+milímetros) a partir dos vetores do logotipo — uma única fonte de verdade, reprodutível. Detalhes: `docs/IDENTIDADE-VISUAL.md`.
+
+### Versão HTML autônoma
+Continua sendo uma **demonstração** (não substitui a loja): o catálogo é editável no navegador e o conteúdo editorial é um
+retrato das respostas públicas do servidor real gerado no build (`scripts/standalone-seed.ts`). Recursos que dependem de
+servidor respondem "disponível apenas na loja completa"; o painel da demonstração mostra apenas os módulos que funcionam
+localmente e é acessado por um botão (sem senha publicada).
+
+### Ferramentas de teste
+Vitest/Testing Library não estavam disponíveis offline. Equivalentes usados: `node:test` + `tsx` (unitários e integração
+com o servidor HTTP real e banco em memória) e Playwright/Chromium (ponta a ponta, visual e versão HTML). A checagem de tipos
+do front-end usa um "shim" local dos tipos do React (ver `docs/RELATORIO-TESTES.md`); com `npm install` normal, `npm run typecheck`
+cobre tudo com os tipos oficiais.

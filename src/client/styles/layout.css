@@ -29,11 +29,11 @@
 .site-header__burger { display: none; justify-self: start; margin-left: -10px; }
 
 .site-nav { grid-column: 1; justify-self: start; }
-.site-nav > ul { display: flex; align-items: center; gap: clamp(14px, 1.45vw, 28px); }
+.site-nav > ul { display: flex; align-items: center; gap: clamp(14px, 1.45vw, 20px); }
 .site-nav > ul > li { position: static; }
 .site-nav > ul > li > a {
   position: relative; display: inline-flex; align-items: center; height: var(--header-h);
-  font-size: clamp(11px, 0.8vw, 12.5px); font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; white-space: nowrap;
+  font-size: clamp(11px, 0.8vw, 12px); font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; white-space: nowrap;
 }
 .site-nav > ul > li > a::after { content: ''; position: absolute; left: 0; right: 0; bottom: calc(50% - 14px); height: 1px; background: currentColor; transform: scaleX(0); transform-origin: left; transition: transform var(--dur) var(--ease-out); }
 .site-nav > ul > li > a:hover::after, .site-nav > ul > li > a.is-active::after, .site-nav > ul > li > a[aria-expanded='true']::after { transform: scaleX(1); }
@@ -66,7 +66,7 @@
   .action__count:empty, .action__count[data-zero] { display: none; }
 }
 /* Menu completo só onde cabe sem tocar a logomarca (verificado em tests/e2e/visual.mjs); abaixo disso, gaveta. */
-@media (max-width: 1199px) {
+@media (max-width: 1279px) {
   .site-nav { display: none; }
   .site-header__burger { display: inline-grid; }
 }
@@ -123,7 +123,8 @@
 
 /* ---------- Rodapé ---------- */
 .site-footer { margin-top: 0; background: var(--c-black); color: var(--c-white); }
-.site-footer__top { display: grid; grid-template-columns: 1.4fr repeat(4, 1fr); gap: 40px; padding-block: 72px 56px; }
+.site-footer__top { display: grid; grid-template-columns: 1.3fr repeat(5, 1fr); gap: 32px; padding-block: 64px 56px; }
+@media (max-width: 1279px) { .site-footer__top { grid-template-columns: repeat(3, minmax(0, 1fr)); } .site-footer__brand { grid-column: 1 / -1; } }
 .site-footer__brand .logo { color: var(--c-white); }
 .site-footer__brand .logo svg { width: 150px; }
 .site-footer__brand p { margin-top: 22px; max-width: 30ch; color: var(--c-on-dark-muted); font-size: var(--fs-sm); }

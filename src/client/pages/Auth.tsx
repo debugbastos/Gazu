@@ -50,7 +50,7 @@ export function LoginPage() {
   const [sp] = useSearchParams();
   const { navigate } = useRouter();
   const { refreshUser, config } = useStore();
-  const demo = config.standalone?.demoLogin;
+  const demo = config.standalone?.demoAdmin;
   const returnTo = safeReturn(sp.get('returnTo'));
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -74,9 +74,9 @@ export function LoginPage() {
     <AuthShell title="Entrar" subtitle="Acesse sua conta para acompanhar pedidos, endereços e favoritos.">
       <GoogleButton returnTo={returnTo} />
       {demo ? (
-        <Notice tone="info" title="Versão de demonstração">
-          Painel administrativo: <strong>{demo.email}</strong> / <strong>{demo.password}</strong>.{' '}
-          <button type="button" className="link-btn" onClick={() => { setEmail(demo.email); setPassword(demo.password); }}>Preencher</button>
+        <Notice tone="info" title="Versão HTML de demonstração">
+          Para conhecer o painel administrativo desta demonstração (dados fictícios, salvos só neste navegador):{' '}
+          <button type="button" className="link-btn" onClick={() => { void api.post('/api/auth/demo-admin').then(refreshUser).then(() => navigate('/admin')).catch((err: unknown) => setError(errorMessage(err))); }}>entrar no painel de demonstração</button>.
         </Notice>
       ) : null}
       <form onSubmit={submit} className="form-stack" noValidate>
@@ -101,6 +101,7 @@ export function RegisterPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [activation, setActivation] = useState<string | null>(null);
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     const errs: Record<string, string> = {};
@@ -114,7 +115,13 @@ export function RegisterPage() {
     setLoading(true);
     setError(null);
     try {
-      await api.post('/api/auth/register', { name: v.name, email: v.email, password: v.password, acceptTerms: true });
+      const r = await api.post<{ ok: boolean; pendingActivation?: boolean; message?: string }>('/api/auth/register', { name: v.name, email: v.email, password: v.password, acceptTerms: true });
+      if (r.pendingActivation) {
+        // E-mail já usado em compra sem cadastro: a conta é ativada pelo link enviado ao e-mail.
+        setError(null);
+        setActivation(r.message ?? 'Enviamos um link para o seu e-mail para ativar a conta.');
+        return;
+      }
       await refreshUser();
       notify('Conta criada! Enviamos um link para confirmar seu e-mail.', 'success');
       navigate(returnTo, { replace: true });
@@ -128,6 +135,7 @@ export function RegisterPage() {
   return (
     <AuthShell title="Criar conta" subtitle="Leva menos de um minuto.">
       <GoogleButton returnTo={returnTo} />
+      {activation ? <Notice tone="success" title="Confira seu e-mail">{activation} Use o link para criar sua senha; seus pedidos anteriores aparecerão na conta.</Notice> : null}
       <form onSubmit={submit} className="form-stack" noValidate>
         {error ? <Notice tone="error">{error}</Notice> : null}
         <Field label="Nome completo" autoComplete="name" value={v.name} onChange={(e) => setV({ ...v, name: e.target.value })} error={errors.name} required />

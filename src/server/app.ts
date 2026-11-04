@@ -12,11 +12,19 @@ import { registerAuthRoutes } from './routes/auth.ts';
 import { registerAccountRoutes } from './routes/account.ts';
 import { registerAdminRoutes } from './routes/admin.ts';
 import { registerWebhookRoutes } from './routes/webhooks.ts';
+import { registerContentRoutes } from './routes/content.ts';
+import { registerAdminContentRoutes } from './routes/admin-content.ts';
+import { registerAdminOrderRoutes } from './routes/admin-orders.ts';
+import { registerEngagementRoutes } from './routes/engagement.ts';
+import { registerSupportRoutes } from './routes/support.ts';
+import { registerManagementRoutes } from './routes/management.ts';
+import { registerDomainHandlers } from './handlers.ts';
 import { renderHtml, robotsTxt, sitemapXml } from './render.ts';
 
 const MIME: Record<string, string> = {
   '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg',
   '.webp': 'image/webp', '.woff': 'font/woff', '.woff2': 'font/woff2', '.json': 'application/json', '.txt': 'text/plain; charset=utf-8', '.ico': 'image/x-icon', '.map': 'application/json',
+  '.webmanifest': 'application/manifest+json', '.pdf': 'application/pdf',
 };
 
 export function createRouter(): Router {
@@ -26,6 +34,12 @@ export function createRouter(): Router {
   registerAuthRoutes(r);
   registerAccountRoutes(r);
   registerAdminRoutes(r);
+  registerAdminOrderRoutes(r);
+  registerContentRoutes(r);
+  registerAdminContentRoutes(r);
+  registerEngagementRoutes(r);
+  registerSupportRoutes(r);
+  registerManagementRoutes(r);
   registerWebhookRoutes(r);
   return r;
 }
@@ -54,6 +68,7 @@ function serveStatic(req: IncomingMessage, res: ServerResponse, pathname: string
 }
 
 export function createApp(): http.Server {
+  registerDomainHandlers();
   const router = createRouter();
   return http.createServer(async (req, res) => {
     const started = Date.now();
@@ -70,7 +85,7 @@ export function createApp(): http.Server {
         const cookies = parseCookies(req.headers.cookie);
         let rawBody: Buffer | undefined;
         if (req.method !== 'GET' && req.method !== 'HEAD') {
-          const isUpload = /^\/api\/admin\/products\/\d+\/images$/.test(pathname);
+          const isUpload = /^\/api\/admin\/products\/\d+\/images$/.test(pathname) || pathname === '/api/admin/uploads';
           rawBody = await readBody(req, isUpload ? 8 * 1024 * 1024 + 1024 : 200_000);
         }
         const ctx: Ctx = {

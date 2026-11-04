@@ -1,6 +1,8 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { ZodType, ZodTypeDef } from 'zod';
 import type { SessionUser } from './auth/sessions.ts';
+import type { Permission } from './auth/permissions.ts';
+import { audit } from './services/audit.ts';
 
 export class HttpError extends Error {
   constructor(
@@ -140,6 +142,18 @@ export const requireUser = (ctx: Ctx): SessionUser => {
 export const requireAdmin = (ctx: Ctx): SessionUser => {
   const u = requireUser(ctx);
   if (u.role !== 'admin') throw new HttpError(403, 'Acesso restrito a administradores.', 'forbidden');
+  return u;
+};
+
+/** Exige uma permissão específica da equipe (verificada no servidor em cada rota). */
+export const requirePermission = (ctx: Ctx, ...perms: Permission[]): SessionUser => {
+  const u = requireAdmin(ctx);
+  const missing = perms.filter((p) => !u.permissions.includes(p));
+  if (missing.length) {
+    // Tentativas negadas também ficam na auditoria (sem dados do corpo da requisição).
+    try { audit({ actor: `admin:${u.id}`, action: 'permission.denied', entity: 'route', entityId: `${ctx.req.method} ${ctx.url.pathname}`, data: { missing }, result: 'denied', ip: ctx.ip }); } catch { /* auditoria não bloqueia a resposta */ }
+    throw new HttpError(403, 'Sua função na equipe não permite esta operação.', 'forbidden', { missing });
+  }
   return u;
 };
 

@@ -19,9 +19,12 @@ const urls = new Set([
   ...seed.product_images.map((i) => i.url),
   ...seed.categories.map((c) => c.image_url).filter(Boolean),
 ]);
-for (const f of ['src/client/components/home/Hero.tsx', 'src/client/pages/Home.tsx']) {
-  for (const m of fs.readFileSync(path.join(root, f), 'utf8').matchAll(/['"](\/assets\/[^'"]+\.(?:webp|png|jpe?g))['"]/g)) urls.add(m[1]);
+const walkSrc = (dir) => fs.readdirSync(dir, { withFileTypes: true }).flatMap((d) => (d.isDirectory() ? walkSrc(path.join(dir, d.name)) : /\.tsx?$/.test(d.name) ? [path.join(dir, d.name)] : []));
+for (const f of walkSrc(path.join(root, 'src/client'))) {
+  for (const m of fs.readFileSync(f, 'utf8').matchAll(/['"`](\/assets\/[^'"`$]+\.(?:webp|png|jpe?g))['"`]/g)) urls.add(m[1]);
 }
+// Imagens do conteúdo editorial (coleções, lookbooks, journal) presentes no retrato do servidor.
+for (const m of JSON.stringify([seed.snapshot, seed.extras]).matchAll(/\/assets\/[A-Za-z0-9_./-]+\.(?:webp|png|jpe?g)/g)) urls.add(m[0]);
 const mime = { '.webp': 'image/webp', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg' };
 const images = {};
 let imgBytes = 0;
@@ -67,16 +70,17 @@ const html = `<!doctype html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>GAZU — Moda que se move com você</title>
-<meta name="description" content="GAZU — moda masculina, feminina e infantil, tênis e acessórios. Versão HTML de demonstração.">
+<meta name="description" content="GAZU — moda masculina, feminina e infantil, tênis e acessórios. Versão HTML de demonstração (não substitui a loja completa).">
 <meta name="theme-color" content="#F7F6F3">
 <link rel="icon" href="${favicon}" type="image/svg+xml">
 <!--
-  GAZU — versão HTML autônoma (demonstração visual e funcional).
-  Abra este arquivo diretamente no navegador. Tudo funciona localmente: catálogo, filtros, busca, produto,
-  sacola, favoritos, cadastro/login, checkout, pagamento SIMULADO, área do cliente e painel administrativo.
-  Os dados ficam salvos apenas neste navegador. Não há cobrança, e-mail, login com Google ou frete real:
-  para operar a loja de verdade use o projeto completo (README.md).
-  Painel: admin@gazu.demo / gazu2026
+  GAZU — versão HTML autônoma: DEMONSTRAÇÃO visual e funcional. NÃO substitui a loja completa.
+  Abra este arquivo diretamente no navegador. Funciona localmente: catálogo, filtros, busca, produto, conteúdo editorial
+  (coleções, lookbooks, journal, FAQ — retrato do conteúdo de demonstração), sacola, favoritos, cadastro/login, checkout com
+  pagamento SIMULADO, área do cliente e um painel reduzido (catálogo, pedidos, cupons, frete).
+  Os dados ficam salvos apenas neste navegador. Não há cobrança, e-mail, login com Google, frete real, atendimento,
+  trocas, financeiro ou backups: para operar a loja de verdade use o projeto completo (README.md).
+  Painel de demonstração: na tela "Entrar", use o botão "entrar no painel de demonstração" (não há senha).
 -->
 <style>${css}</style>
 </head>

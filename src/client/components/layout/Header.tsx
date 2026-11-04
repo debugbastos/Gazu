@@ -10,7 +10,9 @@ export const NAV_ORDER = ['masculino', 'feminino', 'infantil', 'tenis', 'acessor
 
 export function AnnouncementBar() {
   const { config } = useStore();
-  const msgs = config.settings.announcements;
+  // Mensagens administráveis com período de validade (Conteúdo › Avisos do topo).
+  const items = config.announcements?.length ? config.announcements : config.settings.announcements.map((m, i) => ({ id: i, message: m, linkUrl: null }));
+  const msgs = items;
   const [i, setI] = useState(0);
   useEffect(() => {
     if (msgs.length < 2 || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
@@ -20,9 +22,13 @@ export function AnnouncementBar() {
   return (
     <div className="announcement" role="region" aria-label="Avisos da loja">
       <div className="announcement__inner">
-        <p className="announcement__msg" aria-live="off">{msgs[i] ?? ''}</p>
+        <p className="announcement__msg" aria-live="off">{msgs[i] ? (msgs[i]!.linkUrl ? <Link to={msgs[i]!.linkUrl!}>{msgs[i]!.message}</Link> : msgs[i]!.message) : ''}</p>
         <nav className="announcement__links" aria-label="Atalhos">
-          <Link to="/rastrear-pedido">Rastrear pedido</Link>
+          <Link to="/colecoes">Coleções</Link>
+          <span aria-hidden="true">|</span>
+          <Link to="/rastreio">Rastrear pedido</Link>
+          <span aria-hidden="true">|</span>
+          <Link to="/ajuda">Ajuda</Link>
           <span aria-hidden="true">|</span>
           <Link to="/atendimento">Atendimento</Link>
         </nav>
@@ -145,6 +151,7 @@ function MobileMenu({ open, onClose, cats }: { open: boolean; onClose: () => voi
         <ul>
           <li><Link to="/" onClick={onClose}>Início</Link></li>
           <li><Link to="/categoria/novidades" onClick={onClose}>Novidades</Link></li>
+          <li><Link to="/colecoes" onClick={onClose}>Coleções</Link></li>
           {cats.map((c) => (
             <li key={c.slug}>
               <div className="mobile-menu__row">
@@ -162,6 +169,10 @@ function MobileMenu({ open, onClose, cats }: { open: boolean; onClose: () => voi
               ) : null}
             </li>
           ))}
+          <li><Link to="/lookbook" onClick={onClose}>Lookbook</Link></li>
+          <li><Link to="/monte-seu-look" onClick={onClose}>Monte seu look</Link></li>
+          <li><Link to="/journal" onClick={onClose}>Journal</Link></li>
+          <li><Link to="/archive" onClick={onClose}>Archive</Link></li>
         </ul>
       </nav>
       <div className="mobile-menu__foot">
@@ -179,7 +190,9 @@ function MobileMenu({ open, onClose, cats }: { open: boolean; onClose: () => voi
           </>
         )}
         <Link to="/favoritos" onClick={onClose}><Icon name="heart" size={18} /> Favoritos</Link>
-        <Link to="/atendimento" onClick={onClose}><Icon name="info" size={18} /> Atendimento</Link>
+        <Link to="/rastreio" onClick={onClose}><Icon name="truck" size={18} /> Rastrear pedido</Link>
+        <Link to="/ajuda" onClick={onClose}><Icon name="info" size={18} /> Central de ajuda</Link>
+        <Link to="/atendimento" onClick={onClose}><Icon name="chat" size={18} /> Atendimento</Link>
       </div>
     </Dialog>
   );

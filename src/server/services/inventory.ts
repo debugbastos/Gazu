@@ -1,5 +1,6 @@
 import { getDb } from '../db.ts';
 import { HttpError } from '../http.ts';
+import { emit } from '../events.ts';
 
 export type MovementReason = 'initial' | 'adjustment' | 'order_reserve' | 'order_release' | 'restock';
 
@@ -18,5 +19,8 @@ export function moveStock(variantId: number, delta: number, reason: MovementReas
     throw new HttpError(409, 'Estoque insuficiente para esta operação.', 'insufficient_stock', { variantId, available: exists.stock });
   }
   db.run('INSERT INTO inventory_movements (variant_id, delta, reason, order_id, actor, note) VALUES (?, ?, ?, ?, ?, ?)', variantId, delta, reason, orderId, actor, note);
-  return db.get<{ stock: number }>('SELECT stock FROM product_variants WHERE id = ?', variantId)!.stock;
+  const stock = db.get<{ stock: number }>('SELECT stock FROM product_variants WHERE id = ?', variantId)!.stock;
+  // Reposição de uma variante esgotada: avisa a lista de espera (após o COMMIT).
+  if (delta > 0 && stock - delta <= 0 && stock > 0) emit('stock.restored', { variantId });
+  return stock;
 }

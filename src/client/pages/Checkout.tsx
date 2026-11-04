@@ -7,7 +7,8 @@ import { useCartQuote } from '../lib/useCartQuote';
 import { formatCep } from '../../shared/format';
 import type { AddressDTO, OrderDTO } from '../../shared/types';
 import { AddressForm, emptyAddress, validateAddress, type AddressValues } from '../components/checkout/AddressForm';
-import { Breadcrumbs, Button, ButtonLink, Checkbox, EmptyState, ErrorState, Loading, Notice } from '../components/ui/ui';
+import { Breadcrumbs, Button, ButtonLink, Checkbox, EmptyState, ErrorState, Field, Loading, Notice } from '../components/ui/ui';
+import { getAttribution, track } from '../lib/analytics';
 import { CouponForm, OrderSummary, readPrefs, ShippingPicker, writePrefs, type CheckoutPrefs } from './Cart';
 
 export function CheckoutPage() {
@@ -22,11 +23,16 @@ export function CheckoutPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  // Compra sem cadastro (visitante): nome, e-mail, telefone e aceite dos termos.
+  const [guestMode, setGuestMode] = useState(false);
+  const [guest, setGuest] = useState({ name: '', email: '', phone: '' });
+  const [acceptTerms, setAcceptTerms] = useState(false);
 
   useEffect(() => { setCartOpen(false); }, [setCartOpen]);
   useEffect(() => {
-    if (userLoaded && !user) navigate('/entrar?returnTo=/checkout', { replace: true });
-  }, [userLoaded, user, navigate]);
+    if (userLoaded && !user && !config.guestCheckout) navigate('/entrar?returnTo=/checkout', { replace: true });
+  }, [userLoaded, user, navigate, config.guestCheckout]);
+  useEffect(() => { if (cart.length) track({ event: 'begin_checkout', props: { items: cart.length } }); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, []);
   useEffect(() => {
     const list = addrs.data?.addresses;
     if (!list || addressId !== null) return;
@@ -38,20 +44,53 @@ export function CheckoutPage() {
   const cep = selectedAddress?.cep ?? (newAddr.cep.length === 8 ? newAddr.cep : '');
   const update = (p: Partial<CheckoutPrefs>) => { const n = { ...prefs, ...p }; setPrefs(n); writePrefs(n); };
   useEffect(() => { if (cep && cep !== prefs.cep) update({ cep, shippingOptionId: '' }); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [cep]);
-  const { quote, error: quoteError, retry } = useCartQuote(cart, { couponCode: prefs.couponCode, cep, shippingOptionId: prefs.shippingOptionId, enabled: Boolean(user) });
+  const { quote, error: quoteError, retry } = useCartQuote(cart, { couponCode: prefs.couponCode, cep, shippingOptionId: prefs.shippingOptionId, enabled: userLoaded });
 
-  if (!userLoaded || !user) return <div className="container page-pad"><Loading /></div>;
+  if (!userLoaded) return <div className="container page-pad"><Loading /></div>;
+  if (cart.length === 0) return <div className="container page-pad"><EmptyState title="Sua sacola está vazia" action={<ButtonLink to="/categoria/novidades">Ver novidades</ButtonLink>} /></div>;
+  if (!user && !guestMode) {
+    return (
+      <div className="checkout container">
+        <Breadcrumbs items={[{ name: 'Sacola', href: '/carrinho' }, { name: 'Checkout', href: '/checkout' }]} />
+        <h1 className="page-title">Finalizar compra</h1>
+        <div className="checkout-identify">
+          <section className="panel">
+            <h2>Já tenho conta</h2>
+            <p className="muted">Entre para usar seus endereços salvos e acompanhar todos os pedidos.</p>
+            <ButtonLink to="/entrar?returnTo=/checkout">Entrar</ButtonLink>
+            <p className="muted small">Não tem conta? <Link to="/cadastro?returnTo=/checkout" className="link-underline">Criar conta</Link></p>
+          </section>
+          {config.guestCheckout ? (
+            <section className="panel">
+              <h2>Comprar sem cadastro</h2>
+              <p className="muted">Informe seu nome e e-mail. Você recebe por e-mail o link para acompanhar o pedido.</p>
+              <Button variant="secondary" onClick={() => setGuestMode(true)}>Continuar como visitante</Button>
+            </section>
+          ) : null}
+        </div>
+      </div>
+    );
+  }
   if (cart.length === 0) return <div className="container page-pad"><EmptyState title="Sua sacola está vazia" action={<ButtonLink to="/categoria/novidades">Ver novidades</ButtonLink>} /></div>;
   if (quoteError && !quote) return <div className="container page-pad"><ErrorState message={quoteError} onRetry={retry} /></div>;
   if (!quote || addrs.loading) return <div className="container page-pad"><Loading label="Preparando checkout…" /></div>;
 
-  const paymentAvailable = config.payments.pix || config.payments.creditCard || config.payments.demo;
+  const paymentAvailable = config.payments.pix || config.payments.creditCard || config.payments.boleto || config.payments.demo;
 
   const submit = async () => {
     setSubmitError(null);
     if (quote.hasIssues) { setSubmitError('Há itens indisponíveis. Ajuste a sacola antes de continuar.'); return; }
     let addressPayload: Record<string, unknown> = {};
-    if (addressId === 'new' || addressId === null) {
+    if (!user) {
+      const ge: Record<string, string> = {};
+      if (guest.name.trim().length < 3) ge.guestName = 'Informe seu nome completo.';
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(guest.email.trim())) ge.guestEmail = 'Informe um e-mail válido.';
+      if (!acceptTerms) ge.terms = 'É necessário aceitar os termos e a política de privacidade.';
+      const ae = validateAddress(newAddr);
+      setErrors({ ...ae, ...ge });
+      if (Object.keys(ge).length || Object.keys(ae).length) { setSubmitError(ge.terms ?? 'Revise seus dados e o endereço de entrega.'); return; }
+    }
+    if (addressId === 'new' || addressId === null || !user) {
       const e = validateAddress(newAddr);
       setErrors(e);
       if (Object.keys(e).length) { setSubmitError('Revise o endereço de entrega.'); document.querySelector('.address-form')?.scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
@@ -62,16 +101,18 @@ export function CheckoutPage() {
     if (!quote.shipping) { setSubmitError('Escolha uma opção de entrega.'); return; }
     setSubmitting(true);
     try {
-      const order = await api.post<OrderDTO>('/api/checkout/orders', {
-        items: cart, couponCode: prefs.couponCode || null, shippingOptionId: quote.shipping.id, expectedTotalCents: quote.totalCents, ...addressPayload,
-      });
+      const base = { items: cart, couponCode: prefs.couponCode || null, shippingOptionId: quote.shipping.id, expectedTotalCents: quote.totalCents, attribution: getAttribution(), ...addressPayload };
+      const order = user
+        ? await api.post<OrderDTO>('/api/checkout/orders', base)
+        : await api.post<OrderDTO>('/api/checkout/guest-orders', { ...base, address: { ...newAddr, complement: newAddr.complement || null }, guest: { name: guest.name.trim(), email: guest.email.trim(), phone: guest.phone || null, acceptTerms: true } });
       writePrefs({ couponCode: '', cep: '', shippingOptionId: '' });
       // O servidor já esvaziou o carrinho persistido; aqui limpamos a cópia local e seguimos para o pagamento.
       clearCart();
-      navigate(`/checkout/pedido/${order.number}`, { replace: true });
+      navigate(user ? `/checkout/pedido/${order.number}` : `/pedido/${order.number}`, { replace: true });
     } catch (e) {
       if (e instanceof ApiError && e.code === 'total_changed') retry();
       if (e instanceof ApiError && e.code === 'validation_error') setErrors(e.fieldErrors);
+      if (e instanceof ApiError && e.code === 'account_exists') setErrors({ guestEmail: e.message });
       setSubmitError(errorMessage(e));
       setSubmitting(false);
     }
@@ -86,13 +127,24 @@ export function CheckoutPage() {
         <div className="checkout__steps">
           <section className="step" aria-labelledby="st1">
             <h2 id="st1"><span className="step__n">01</span> Identificação</h2>
-            <p>Comprando como <strong>{user.name || user.email}</strong> ({user.email}).</p>
+            {user ? <p>Comprando como <strong>{user.name || user.email}</strong> ({user.email}).</p> : (
+              <div className="form-stack">
+                <p className="muted small">Comprando sem cadastro. <button className="link-btn" onClick={() => setGuestMode(false)}>Prefiro entrar na conta</button></p>
+                <div className="form-grid">
+                  <Field label="Nome completo" value={guest.name} onChange={(e) => setGuest({ ...guest, name: e.target.value })} error={errors.guestName} autoComplete="name" required />
+                  <Field label="E-mail" type="email" value={guest.email} onChange={(e) => setGuest({ ...guest, email: e.target.value })} error={errors.guestEmail} autoComplete="email" required hint="Enviamos a confirmação e o link do pedido para este e-mail." />
+                  <Field label="Telefone" value={guest.phone} onChange={(e) => setGuest({ ...guest, phone: e.target.value })} optional autoComplete="tel" inputMode="tel" />
+                </div>
+                <Checkbox checked={acceptTerms} onChange={setAcceptTerms} label={<>Li e aceito os <Link to="/termos-de-uso" className="link-underline">Termos de uso</Link> e a <Link to="/politica-de-privacidade" className="link-underline">Política de privacidade</Link>.</>} />
+                {errors.terms ? <p className="field__error" role="alert">{errors.terms}</p> : null}
+              </div>
+            )}
           </section>
 
           <section className="step" aria-labelledby="st2">
             <h2 id="st2"><span className="step__n">02</span> Endereço de entrega</h2>
             {addrs.error ? <ErrorState message={addrs.error} onRetry={addrs.reload} /> : null}
-            {addrs.data?.addresses.length ? (
+            {user && addrs.data?.addresses.length ? (
               <fieldset className="addr-options">
                 <legend className="sr-only">Endereços salvos</legend>
                 {addrs.data.addresses.map((a) => (
@@ -107,10 +159,10 @@ export function CheckoutPage() {
                 </label>
               </fieldset>
             ) : null}
-            {addressId === 'new' || addressId === null ? (
+            {addressId === 'new' || addressId === null || !user ? (
               <>
                 <AddressForm value={newAddr} onChange={setNewAddr} errors={errors} />
-                <Checkbox checked={saveAddr} onChange={setSaveAddr} label="Salvar este endereço na minha conta" />
+                {user ? <Checkbox checked={saveAddr} onChange={setSaveAddr} label="Salvar este endereço na minha conta" /> : null}
               </>
             ) : null}
           </section>

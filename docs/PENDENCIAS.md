@@ -1,44 +1,64 @@
-# Pendências antes de vender — GAZU
+# Pendências, dependências externas e ativação — GAZU
 
-O sistema está implementado e testado em ambiente de desenvolvimento. Os itens abaixo dependem do cliente ou de contas externas. Nenhum deles é simulado em produção: enquanto não forem resolvidos, a loja informa claramente que a função não está disponível.
+Situação em 18/10/2026. O código está implementado e testado em desenvolvimento (ver `docs/RELATORIO-TESTES.md` e
+`docs/REQUISITOS.md`). **A loja não está pronta para vender** até que os itens críticos abaixo sejam resolvidos e verificados
+em produção (`docs/CHECKLIST-PRODUCAO.md`). Nada disso é simulado em produção: sem a configuração, o site informa que o
+recurso não está disponível.
 
-## Dependem do cliente
+## 1. Credenciais e serviços que a GAZU precisa configurar
+
+> **Não envie chaves por chat, e-mail ou ticket.** Cada valor é colado diretamente nas variáveis de ambiente do servidor
+> (arquivo `.env` com permissão restrita ou painel de variáveis da hospedagem). Nomes exatos em `.env.example`.
+
+| Serviço | O que criar | Variáveis | Prioridade |
+|---|---|---|---|
+| Hospedagem Node 22 com disco persistente | Servidor/serviço + domínio + HTTPS | `APP_URL`, `TRUST_PROXY`, `SESSION_SECRET` (gerar no servidor) | Crítica |
+| Mercado Pago | Conta vendedora, aplicação, credenciais de teste e de produção, webhook | `MP_ACCESS_TOKEN`, `MP_PUBLIC_KEY`, `MP_WEBHOOK_SECRET` (ou `MERCADOPAGO_*`), `MP_ENABLED_METHODS`, `MP_MAX_INSTALLMENTS` | Crítica |
+| Resend | Conta + domínio verificado (SPF/DKIM) | `RESEND_API_KEY`, `EMAIL_FROM`, `EMAIL_PROVIDER=resend` | Crítica |
+| Frete | Melhor Envio (token com permissões de cotação/etiqueta/rastreio) **ou** regras manuais reais | `MELHORENVIO_TOKEN`, `MELHORENVIO_ENV`, `SHIPPING_ORIGIN_CEP`, `MELHORENVIO_USER_AGENT` | Crítica |
+| Armazenamento externo de backups | Bucket/snapshots com credencial só de gravação | configurado na hospedagem (fora do app) | Crítica |
+| Alertas | E-mail de operação e/ou webhook (Slack/Discord/Teams) | `ALERT_EMAIL`, `ALERT_WEBHOOK_URL` | Importante |
+| Monitor de disponibilidade | UptimeRobot, Better Stack ou similar em `/api/health` | — | Importante |
+| Google (opcional) | Cliente OAuth "Aplicativo da Web" | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Opcional |
+| WhatsApp Cloud API (opcional) | Meta Business verificada, número, token permanente, App Secret | `WHATSAPP_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_VERIFY_TOKEN`, `WHATSAPP_APP_SECRET` | Opcional |
+
+Procedimentos passo a passo: `docs/INTEGRACOES.md`.
+
+## 2. Dados e decisões que dependem da GAZU
 
 | Item | Situação atual | Onde resolver |
 |---|---|---|
-| Preços reais | Preços ilustrativos (marcados “Demonstração”) | /admin/produtos |
-| Estoque real | Estoque ilustrativo | /admin/produtos → Variantes → Ajustar estoque |
-| Cores confirmadas | Descritas pela aparência da foto (“Cor descrita a partir da fotografia”) | /admin/produtos → marcar “Cores confirmadas” |
-| Tamanhos por produto | Perfis genéricos (PP–GG, 2–12, 34–43, Único) | /admin/produtos → Variantes |
-| Fotos adicionais por produto | 1 foto por produto | /admin/produtos → Imagens (a galeria passa a usá-las) |
-| Fotos dos acessórios | Usadas as fotos de acessórios presentes no arquivo enviado (bonés, colares, pulseiras, relógios e kits com anéis); categoria Bolsas sem produtos | /admin/produtos |
-| Direito de uso das imagens | Várias fotos exibem marcas de terceiros e uma tem marca d’água “Dola AI” — **confirmar origem, licença e autenticidade dos produtos** | — |
-| Modelos do hero em alta resolução | Origem com 300–624 px de largura | substituir em `assets-source/hero/` e rodar `npm run images` |
-| Fonte oficial da marca | Inter / Inter Display (provisória) | `src/client/styles/tokens.css` |
-| Arquivos originais dos templates | Usadas as capturas de tela | enviar para refinamento fino |
-| Razão social, CNPJ, endereço | Vazios (o site mostra aviso em vez de inventar) | /admin/configuracoes |
-| E-mail, telefone, WhatsApp, horário | Vazios | /admin/configuracoes |
-| Redes sociais | Vazias (links não aparecem) | /admin/configuracoes |
-| Política comercial de trocas (além dos 7 dias legais) | Texto-base com aviso de pendência | `src/client/pages/Static.tsx` |
-| Revisão jurídica (privacidade, termos) | Textos-base | `src/client/pages/Static.tsx` |
-| Mensagem da barra de anúncio | “Nova coleção GAZU — conheça as novidades” (não promete frete grátis/descontos) | /admin/configuracoes |
-| Cupom de demonstração `BEMVINDO10` | Ativo e marcado como demo | /admin/cupons (desativar ou ajustar) |
+| Catálogo real (preços, estoque, cores confirmadas, tamanhos, composição, cuidados, medidas, custos, peso/dimensões) | 98 produtos **de demonstração** sinalizados; composição/medidas/custos vazios (nada inventado) | Painel › Produtos e › Qualidade do catálogo |
+| Fotos | 1 foto por produto; hero com resolução baixa (300–624 px); **direito de uso e autenticidade a confirmar** (há marcas de terceiros e uma marca d'água) | Painel › Produtos › Imagens; `assets-source/` |
+| Dados da empresa (razão social, CNPJ, endereço), contato, horário, WhatsApp, redes | Vazios — rodapé e e-mails omitem em vez de inventar | Painel › Configurações |
+| Políticas (privacidade, termos, trocas além dos 7 dias legais, entrega, pagamento, cancelamento) | Textos-base sinalizados como pendentes de revisão | Painel › Conteúdo › Páginas e `src/client/pages/Static.tsx` |
+| Prazo comercial de trocas, custo de embalagem, janela de "novidades", estoque baixo, horas para carrinho abandonado | Valores padrão/vazios | Painel › Configurações › Operação e custos |
+| Remetente das etiquetas | Vazio | Painel › Configurações › Remetente |
+| Conteúdo editorial (coleções, lookbooks, journal, FAQ) | Exemplos de demonstração montados com fotos do catálogo | Painel › Conteúdo e vitrine |
+| Cupom `BEMVINDO10` | Ativo, marcado como demonstração | Painel › Cupons |
+| Equipe e funções | Só o proprietário criado por linha de comando | Painel › Equipe |
+| Materiais impressos | Arquivos prontos; nenhum produzido | Gráfica (`public/assets/branding/print/`) |
+| Fonte oficial | Inter / Inter Display (OFL) | `styles/tokens.css` |
 
-## Dependem de contas/integrações externas
+## 3. Pendências técnicas (do próprio projeto)
 
-| Integração | O que falta | Referência |
-|---|---|---|
-| Mercado Pago (Pix e cartão) | Conta, credenciais de teste → produção, métodos aprovados, webhook com assinatura | README §8–9 |
-| Webhook em HTTPS | Domínio público com HTTPS | README §9 |
-| Login com Google | Projeto no Google Cloud e credenciais OAuth | README §7 |
-| Frete | Regras manuais no painel **ou** contrato com transportadora/agregador (integração não implementada) | README §10 |
-| E-mail transacional | Conta Resend (ou equivalente) e domínio verificado | README §11 |
-| Hospedagem | Servidor Node 22 com disco persistente e backup | README §13 |
-| Cartão de débito | Não implementado (depende da modalidade aprovada na conta) | — |
-| Parcelamento | Controlado por `MP_MAX_INSTALLMENTS`; juros/condições vêm do provedor | — |
+| Item | Detalhe |
+|---|---|
+| Vale-presente | Não implementado (opcional no Prompt Master). Exige definição comercial e fiscal. |
+| Redirecionamento de URLs antigas | Ao mudar o slug de um produto, a URL antiga dá 404 (não há tabela de redirecionamento). |
+| Testes em aparelhos modestos e rede lenta | Não executados (sem dispositivos neste ambiente). |
+| Checagem de tipos do front com os tipos oficiais do React | Feita com um "shim" local (registro npm indisponível); rodar `npm install && npm run typecheck` no primeiro ambiente com internet. |
+| Mensagens de WhatsApp fora da janela de 24 h | Exigem modelos aprovados pela Meta — não implementado (resposta segue por e-mail). |
+| Cartão de débito / carteiras | Não habilitados (dependem da conta MP). |
+| Limitador de tentativas | Em memória (uma instância). Com várias instâncias, mover para Redis. |
+| Busca | `LIKE` normalizado + correção por similaridade; para catálogos muito grandes, FTS5/Postgres. |
+| Banco | SQLite (equivalente adotado). Migração para Postgres documentada em `docs/ESCALABILIDADE.md` §3. |
+| Auditoria com leitor de tela real | Não executada; a navegação por teclado e os rótulos foram testados automaticamente. |
 
-## Limitações conhecidas
-
-- Verificação TypeScript completa do front-end requer `npm install` (os tipos `@types/react` não estavam disponíveis no ambiente desta entrega; o servidor foi verificado em modo estrito e o cliente com tipos simplificados — ver relatório de testes).
-- Limitador de tentativas é em memória (adequado para uma instância). Em múltiplas instâncias, mover para Redis.
-- Busca usa `LIKE` normalizado (sem acento). Para catálogos grandes, considerar FTS5/Postgres full-text.
+## 4. Ordem sugerida de ativação
+1. Hospedagem + domínio + HTTPS + `.env` de produção (sem `demo`).
+2. Dados da empresa, políticas revisadas, catálogo real (com custos) e equipe.
+3. Resend (e-mails) → Mercado Pago em **teste** → testes completos → produção com compra real autorizada e estorno.
+4. Frete (Melhor Envio ou regras manuais reais) → primeira etiqueta.
+5. Backups externos + teste de restauração em produção + alertas + monitor.
+6. Opcionais: Google, WhatsApp Cloud API, Search Console.

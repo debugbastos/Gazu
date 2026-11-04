@@ -21,7 +21,9 @@ export function registerWebhookRoutes(r: Router): void {
     const sigHeader = ctx.req.headers['x-signature'] as string | undefined;
     const requestId = ctx.req.headers['x-request-id'] as string | undefined;
     const ts = /ts=(\d+)/.exec(sigHeader ?? '')?.[1] ?? 'no-ts';
-    const eventKey = `${type}:${dataId ?? 'none'}:${body.action ?? 'none'}:${ts}`;
+    // Chave de idempotência: a mesma notificação reenviada (mesmo x-request-id e ts) é registrada uma única vez.
+    // Mesmo que um evento seja processado de novo, o status aplicado vem sempre da API do provedor (idempotente).
+    const eventKey = `${type}:${dataId ?? 'none'}:${body.action ?? 'none'}:${(requestId ?? 'no-req').slice(0, 80)}:${ts}`;
 
     const record = (signatureValid: boolean, result: string, detail: string | null, paymentId: number | null = null, status: string | null = null) =>
       db.run(

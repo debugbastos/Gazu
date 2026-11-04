@@ -7,21 +7,29 @@ import type { ProductCardDTO } from '../../../shared/types';
 import { Icon } from '../ui/Icon';
 import { Dialog, Price } from '../ui/ui';
 
+// Atalhos iniciais (termos do catálogo atual). Substituídos pelas buscas mais frequentes quando houver dados reais.
 const SUGGESTIONS = ['Camiseta oversized', 'Tênis branco', 'Vestido longo', 'Conjunto infantil', 'Boné', 'Calça wide'];
+interface SuggestResult { items: ProductCardDTO[]; total: number; correctedQuery?: string | null; suggestions?: string[]; categories?: { slug: string; name: string }[]; popular?: string[] }
 
 export function SearchOverlay() {
   const { searchOpen, setSearchOpen } = useStore();
   const { navigate } = useRouter();
   const [q, setQ] = useState('');
   const dq = useDebounced(q.trim(), 220);
-  const [state, setState] = useState<{ items: ProductCardDTO[]; total: number; loading: boolean; error: boolean }>({ items: [], total: 0, loading: false, error: false });
+  const [state, setState] = useState<SuggestResult & { loading: boolean; error: boolean }>({ items: [], total: 0, loading: false, error: false });
+  const [popular, setPopular] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (!searchOpen) return;
+    api.get<SuggestResult>('/api/search/suggest?q=').then((r) => setPopular(r.popular ?? [])).catch(() => undefined);
+  }, [searchOpen]);
 
   useEffect(() => {
     if (dq.length < 2) { setState({ items: [], total: 0, loading: false, error: false }); return; }
     const ctrl = new AbortController();
     setState((s) => ({ ...s, loading: true, error: false }));
-    api.get<{ items: ProductCardDTO[]; total: number }>(`/api/search/suggest?q=${encodeURIComponent(dq)}`, { signal: ctrl.signal })
-      .then((r) => setState({ items: r.items, total: r.total, loading: false, error: false }))
+    api.get<SuggestResult>(`/api/search/suggest?q=${encodeURIComponent(dq)}`, { signal: ctrl.signal })
+      .then((r) => setState({ ...r, loading: false, error: false }))
       .catch(() => { if (!ctrl.signal.aborted) setState({ items: [], total: 0, loading: false, error: true }); });
     return () => ctrl.abort();
   }, [dq]);
@@ -49,17 +57,22 @@ export function SearchOverlay() {
         <div className="search-overlay__results" aria-live="polite">
           {dq.length < 2 ? (
             <div className="search-overlay__suggest">
-              <p className="eyebrow">Sugestões</p>
-              <ul>{SUGGESTIONS.map((s) => <li key={s}><button className="chip" onClick={() => setQ(s)}>{s}</button></li>)}</ul>
+              <p className="eyebrow">{popular.length ? 'Mais buscados' : 'Sugestões'}</p>
+              <ul>{(popular.length ? popular : SUGGESTIONS).map((s) => <li key={s}><button className="chip" onClick={() => setQ(s)}>{s}</button></li>)}</ul>
             </div>
           ) : state.loading && !state.items.length ? (
             <p className="muted">Buscando…</p>
           ) : state.error ? (
             <p className="muted">Não foi possível buscar agora. Tente novamente.</p>
           ) : state.items.length === 0 ? (
-            <p className="muted">Nenhum produto encontrado para “{dq}”. Tente outro termo.</p>
+            <div className="search-overlay__suggest">
+              <p className="muted">Nenhum produto encontrado para “{dq}”. Tente outro termo.</p>
+              {state.suggestions?.length ? <ul>{state.suggestions.map((s) => <li key={s}><button className="chip" onClick={() => setQ(s)}>{s}</button></li>)}</ul> : null}
+            </div>
           ) : (
             <>
+              {state.correctedQuery ? <p className="muted small">Mostrando resultados para <strong>“{state.correctedQuery}”</strong>.</p> : null}
+              {state.categories?.length ? <ul className="search-overlay__cats">{state.categories.map((c) => <li key={c.slug}><Link className="chip" to={`/categoria/${c.slug}`} onClick={close}>{c.name} <Icon name="arrowRight" size={14} /></Link></li>)}</ul> : null}
               <ul className="search-overlay__list">
                 {state.items.map((p) => (
                   <li key={p.id}>

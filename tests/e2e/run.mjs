@@ -4,6 +4,10 @@
 //  2. Movimento reduzido: sem ciclo automático.
 //  3. Compra completa: produto → variante → sacola → cadastro → checkout → pagamento simulado → pedido pago.
 //  4. Painel: administrador vê o pedido e registra envio com rastreamento; cliente vê o código.
+//  5. Compra sem cadastro (visitante) com acesso ao pedido pelo link/cookie assinado.
+//  6. Faixa de cookies: analytics só depois do consentimento.
+//  7. Páginas editoriais e institucionais carregam sem erros.
+//  8. Painel: módulos de gestão abrem sem erros e a função "Atendimento" não acessa o financeiro.
 // Uso: node tests/e2e/run.mjs
 import fs from 'node:fs';
 import os from 'node:os';
@@ -19,6 +23,8 @@ const env = {
   ...process.env, NODE_ENV: 'development', PORT: String(PORT), HOST: '127.0.0.1', APP_URL: BASE, DATABASE_PATH: path.join(tmp, 'e2e.db'),
   SESSION_SECRET: 'e2e-secret-0123456789abcdef', DEMO_MODE: 'true', PAYMENT_PROVIDER: 'demo', SHIPPING_PROVIDER: 'demo', EMAIL_PROVIDER: 'console',
   GOOGLE_CLIENT_ID: '', GOOGLE_CLIENT_SECRET: '', MP_ACCESS_TOKEN: '', MP_WEBHOOK_SECRET: '',
+  // Rotinas desligadas e backups (se houver) na pasta temporária: o teste não grava nada no projeto.
+  JOBS_ENABLED: 'false', BACKUP_DIR: path.join(tmp, 'backups'),
 };
 const node = (args, extra = {}) => spawnSync(process.execPath, ['--disable-warning=ExperimentalWarning', '--import', 'tsx', ...args], { cwd: root, env: { ...env, ...extra }, encoding: 'utf8' });
 
@@ -29,6 +35,14 @@ async function step(name, fn) {
   catch (e) { results.push({ name, ok: false, error: e.message }); console.log(`✗ ${name}\n    ${e.message}`); }
 }
 const assert = (cond, msg) => { if (!cond) throw new Error(msg); };
+// Nos fluxos de compra a escolha de cookies já está feita ("somente essenciais"); a faixa é testada no cenário 6.
+const CONSENT = () => { try { localStorage.setItem('gazu.consent.v1', JSON.stringify({ analytics: false, decidedAt: new Date().toISOString() })); } catch { /* sem armazenamento */ } };
+const newCtx = async (opts) => { const ctx = await browser.newContext(opts); await ctx.addInitScript(CONSENT); return ctx; };
+const pageErrors = (page, bag, label) => {
+  page.on('pageerror', (e) => bag.push(`${label}: ${e.message}`));
+  page.on('console', (m) => { if (m.type() === 'error' && !/favicon|sdk\.mercadopago|viacep|ERR_TUNNEL|ERR_NAME_NOT_RESOLVED/i.test(m.text())) bag.push(`${label}: ${m.text()}`); });
+};
+let browser;
 
 async function main() {
   if (!fs.existsSync(path.join(root, 'public/build/manifest.json'))) throw new Error('Execute "npm run build" antes dos testes e2e.');
@@ -43,7 +57,7 @@ async function main() {
   server.stderr.on('data', (d) => (log += d));
   for (let i = 0; i < 60; i++) { try { if ((await fetch(BASE + '/api/config')).ok) break; } catch { /* aguardando */ } await new Promise((res) => setTimeout(res, 250)); }
 
-  const browser = await chromium.launch();
+  browser = await chromium.launch();
   try {
     await step('hero: 4 modelos em ordem, permanência ≈3 s, retorno ao 1º, sem palco vazio, palavra fixa', async () => {
       const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
@@ -117,7 +131,7 @@ async function main() {
 
     let orderNumber = '';
     await step('compra completa: variante → sacola → cadastro → checkout → pagamento simulado aprovado', async () => {
-      const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+      const ctx = await newCtx({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
       const page = await ctx.newPage();
       await page.goto(BASE + '/produto/camisa-manga-curta-texturizada', { waitUntil: 'networkidle' });
       // Sem tamanho → erro acessível
@@ -130,22 +144,23 @@ async function main() {
       await page.getByRole('button', { name: /Sacola com 1 item/ }).click();
       await page.locator('.cart-drawer .cart-line').first().waitFor();
       await page.getByRole('link', { name: 'Finalizar compra' }).click();
-      await page.waitForURL(/\/entrar/);
-      await page.getByRole('link', { name: 'Criar conta' }).click();
-      await page.getByLabel('Nome completo').fill('Cliente E2E');
-      await page.getByLabel('E-mail').fill(`e2e${Date.now()}@teste.dev`);
-      await page.getByLabel('Senha', { exact: true }).fill('SenhaE2E2026');
-      await page.getByLabel('Confirmar senha').fill('SenhaE2E2026');
-      await page.locator('.checkbox').last().click();
-      await page.getByRole('button', { name: 'Criar conta' }).click();
       await page.waitForURL(/\/checkout$/);
-      await page.getByLabel('Nome do destinatário').fill('Cliente E2E');
-      await page.getByLabel('CEP').fill('01310100');
-      await page.getByLabel('Rua').fill('Avenida Paulista');
-      await page.getByLabel('Número').fill('1000');
-      await page.getByLabel('Bairro').fill('Bela Vista');
-      await page.getByLabel('Cidade').fill('São Paulo');
-      await page.getByLabel('UF').selectOption('SP');
+      await page.locator('.checkout-identify').getByRole('link', { name: 'Criar conta' }).click();
+      const auth = page.locator('.auth__card');
+      await auth.getByLabel('Nome completo').fill('Cliente E2E');
+      await auth.getByLabel('E-mail', { exact: true }).fill(`e2e${Date.now()}@teste.dev`);
+      await auth.getByLabel('Senha', { exact: true }).fill('SenhaE2E2026');
+      await auth.getByLabel('Confirmar senha').fill('SenhaE2E2026');
+      await auth.locator('.checkbox', { hasText: 'Li e aceito' }).click({ position: { x: 9, y: 9 } });
+      await auth.getByRole('button', { name: 'Criar conta' }).click();
+      await page.waitForURL((u) => new URL(u).pathname === '/checkout');
+      await page.getByLabel('Nome do destinatário', { exact: true }).fill('Cliente E2E');
+      await page.getByLabel('CEP', { exact: true }).fill('01310100');
+      await page.getByLabel('Rua', { exact: true }).fill('Avenida Paulista');
+      await page.getByLabel('Número', { exact: true }).fill('1000');
+      await page.getByLabel('Bairro', { exact: true }).fill('Bela Vista');
+      await page.getByLabel('Cidade', { exact: true }).fill('São Paulo');
+      await page.getByLabel('UF', { exact: true }).selectOption('SP');
       await page.locator('.ship-option').first().click();
       await page.getByRole('button', { name: 'Confirmar pedido e pagar' }).click();
       await page.waitForURL(/\/checkout\/pedido\//);
@@ -162,13 +177,13 @@ async function main() {
 
     await step('painel: admin registra envio com rastreio; cliente comum não acessa /admin', async () => {
       assert(orderNumber, 'pedido do passo anterior');
-      const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+      const ctx = await newCtx({ viewport: { width: 1440, height: 900 } });
       const page = await ctx.newPage();
       await page.goto(BASE + '/entrar?returnTo=/admin/pedidos', { waitUntil: 'networkidle' });
-      await page.getByLabel('E-mail').fill('admin@e2e.dev');
-      await page.getByLabel('Senha').fill('AdminE2E2026');
-      await page.getByRole('button', { name: 'Entrar' }).click();
-      await page.waitForURL(/\/admin\/pedidos/);
+      await page.locator('.auth__card').getByLabel('E-mail', { exact: true }).fill('admin@e2e.dev');
+      await page.locator('.auth__card').getByLabel('Senha', { exact: true }).fill('AdminE2E2026');
+      await page.locator('.auth__card').getByRole('button', { name: 'Entrar' }).click();
+      await page.waitForURL((u) => new URL(u).pathname === '/admin/pedidos');
       await page.getByRole('link', { name: orderNumber }).click();
       await page.getByLabel('Alterar status').selectOption('processing');
       await page.getByRole('button', { name: 'Salvar' }).click();
@@ -181,6 +196,113 @@ async function main() {
       await ctx.close();
       const res = await fetch(`${BASE}/api/admin/orders/${orderNumber}`);
       assert(res.status === 401, `visitante na API admin: ${res.status}`);
+    });
+
+    await step('compra sem cadastro: visitante paga (simulado) e acompanha o pedido pelo link seguro', async () => {
+      const ctx = await newCtx({ viewport: { width: 1280, height: 900 } });
+      const page = await ctx.newPage();
+      await page.goto(BASE + '/produto/camisa-manga-curta-texturizada', { waitUntil: 'networkidle' });
+      await page.locator('.pdp-size:not(.is-out)').first().click();
+      await page.locator('.pdp-buy__btn').click();
+      await page.getByText(/foi adicionado à sacola/).waitFor();
+      await page.goto(BASE + '/checkout', { waitUntil: 'networkidle' });
+      await page.getByRole('button', { name: 'Continuar como visitante' }).click();
+      const email = `visitante${Date.now()}@teste.dev`;
+      const step1 = page.locator('.step').first();
+      await step1.getByLabel('Nome completo').fill('Visitante E2E');
+      await step1.getByLabel('E-mail', { exact: true }).fill(email);
+      await step1.locator('.checkbox', { hasText: 'Li e aceito' }).click({ position: { x: 9, y: 9 } });
+      await page.getByLabel('Nome do destinatário', { exact: true }).fill('Visitante E2E');
+      await page.getByLabel('CEP', { exact: true }).fill('01310100');
+      await page.getByLabel('Rua', { exact: true }).fill('Avenida Paulista');
+      await page.getByLabel('Número', { exact: true }).fill('1000');
+      await page.getByLabel('Bairro', { exact: true }).fill('Bela Vista');
+      await page.getByLabel('Cidade', { exact: true }).fill('São Paulo');
+      await page.getByLabel('UF', { exact: true }).selectOption('SP');
+      await page.locator('.ship-option').first().click();
+      await page.getByRole('button', { name: 'Confirmar pedido e pagar' }).click();
+      await page.waitForURL(/\/pedido\/GZ/);
+      const guestOrder = page.url().split('/').pop().split('?')[0];
+      await page.getByRole('radio', { name: /Pagamento simulado/ }).click();
+      await page.getByRole('button', { name: 'Iniciar pagamento simulado' }).click();
+      await page.getByRole('button', { name: 'Simular aprovação' }).click();
+      await page.getByText('Pagamento confirmado').first().waitFor();
+      await page.screenshot({ path: path.join(root, 'tests/e2e/screenshots/visitante-pedido-pago--desktop.png'), fullPage: true });
+      // Outro navegador (sem o cookie assinado) não vê o pedido sem o token do e-mail.
+      const anon = await fetch(`${BASE}/api/orders/${guestOrder}`);
+      assert(anon.status === 401 || anon.status === 403 || anon.status === 404, `pedido de visitante sem token: ${anon.status}`);
+      await ctx.close();
+    });
+
+    await step('cookies: analytics só é enviado depois do consentimento', async () => {
+      const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+      const page = await ctx.newPage();
+      const analytics = [];
+      page.on('request', (rq) => { if (rq.url().includes('/api/analytics/events')) analytics.push(rq.url()); });
+      await page.goto(BASE + '/categoria/masculino', { waitUntil: 'networkidle' });
+      await page.locator('.consent').waitFor();
+      await page.waitForTimeout(800);
+      assert(analytics.length === 0, `eventos enviados sem consentimento: ${analytics.length}`);
+      await page.getByRole('button', { name: 'Somente essenciais' }).click();
+      await page.locator('.consent').waitFor({ state: 'detached' });
+      await page.goto(BASE + '/categoria/feminino', { waitUntil: 'networkidle' });
+      await page.waitForTimeout(800);
+      assert(analytics.length === 0, `eventos enviados após recusa: ${analytics.length}`);
+      await ctx.close();
+    });
+
+    await step('páginas editoriais e institucionais carregam sem erros', async () => {
+      const ctx = await newCtx({ viewport: { width: 1440, height: 900 } });
+      const errs = [];
+      for (const pth of ['/colecoes', '/archive', '/lookbook', '/journal', '/monte-seu-look', '/ajuda', '/entrega', '/pagamento', '/trocas-e-devolucoes', '/cancelamento', '/politica-de-privacidade', '/termos-de-uso', '/rastreio', '/atendimento', '/busca?q=camisa']) {
+        const page = await ctx.newPage();
+        pageErrors(page, errs, pth);
+        const res = await page.goto(BASE + pth, { waitUntil: 'networkidle' });
+        assert(res && res.status() < 400, `${pth}: HTTP ${res?.status()}`);
+        const h1 = await page.locator('h1').first().textContent().catch(() => '');
+        assert(h1 && h1.trim().length > 0, `${pth}: sem título`);
+        await page.close();
+      }
+      const page = await ctx.newPage();
+      await page.goto(BASE + '/lookbook', { waitUntil: 'networkidle' });
+      await page.locator('a[href^="/lookbook/"]').first().click();
+      await page.locator('.hotspot').first().waitFor({ timeout: 10000 }).catch(() => { throw new Error('lookbook sem pontos de produto'); });
+      await page.screenshot({ path: path.join(root, 'tests/e2e/screenshots/lookbook--desktop.png') });
+      await ctx.close();
+      assert(errs.length === 0, errs.join(' | '));
+    });
+
+    await step('painel: módulos de gestão abrem sem erros; função Atendimento não acessa o financeiro', async () => {
+      const ctx = await newCtx({ viewport: { width: 1440, height: 900 } });
+      const page = await ctx.newPage();
+      const errs = [];
+      pageErrors(page, errs, 'admin');
+      page.on('response', (rs) => { if (rs.url().includes('/api/admin/') && rs.status() >= 400) errs.push(`HTTP ${rs.status()} ${rs.url()}`); });
+      await page.goto(BASE + '/entrar?returnTo=/admin', { waitUntil: 'networkidle' });
+      await page.locator('.auth__card').getByLabel('E-mail', { exact: true }).fill('admin@e2e.dev');
+      await page.locator('.auth__card').getByLabel('Senha', { exact: true }).fill('AdminE2E2026');
+      await page.locator('.auth__card').getByRole('button', { name: 'Entrar' }).click();
+      await page.waitForURL((u) => new URL(u).pathname === '/admin');
+      for (const pth of ['/admin/financeiro', '/admin/operacao', '/admin/atendimento', '/admin/trocas', '/admin/envios', '/admin/analytics', '/admin/marketing', '/admin/equipe', '/admin/auditoria', '/admin/privacidade', '/admin/marca', '/admin/qualidade', '/admin/estoque', '/admin/avaliacoes', '/admin/conteudo/lookbooks', '/admin/configuracoes', '/admin/produtos', '/admin/clientes']) {
+        await page.goto(BASE + pth, { waitUntil: 'networkidle' });
+        await page.locator('.admin__head h1').waitFor();
+      }
+      assert(errs.length === 0, errs.join(' | '));
+      await ctx.close();
+      // Pessoa de atendimento: conta criada no site e promovida pelo proprietário.
+      const supportEmail = `atendimento${Date.now()}@e2e.dev`;
+      const reg = await fetch(`${BASE}/api/auth/register`, { method: 'POST', headers: { 'Content-Type': 'application/json', Origin: BASE }, body: JSON.stringify({ name: 'Atendimento E2E', email: supportEmail, password: 'Atende2026x', acceptTerms: true }) });
+      assert(reg.ok, `cadastro da pessoa de atendimento: ${reg.status}`);
+      const ownerLogin = await fetch(`${BASE}/api/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json', Origin: BASE }, body: JSON.stringify({ email: 'admin@e2e.dev', password: 'AdminE2E2026' }) });
+      const ownerCookie = ownerLogin.headers.getSetCookie().map((c) => c.split(';')[0]).join('; ');
+      const add = await fetch(`${BASE}/api/admin/team`, { method: 'POST', headers: { 'Content-Type': 'application/json', Origin: BASE, Cookie: ownerCookie }, body: JSON.stringify({ email: supportEmail, role: 'support' }) });
+      assert(add.ok, `proprietário adiciona atendimento: ${add.status}`);
+      const supLogin = await fetch(`${BASE}/api/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json', Origin: BASE }, body: JSON.stringify({ email: supportEmail, password: 'Atende2026x' }) });
+      const supCookie = supLogin.headers.getSetCookie().map((c) => c.split(';')[0]).join('; ');
+      const fin = await fetch(`${BASE}/api/admin/finance/summary`, { headers: { Cookie: supCookie } });
+      assert(fin.status === 403, `atendimento no financeiro: ${fin.status}`);
+      const tickets = await fetch(`${BASE}/api/admin/support/tickets`, { headers: { Cookie: supCookie } });
+      assert(tickets.ok, `atendimento na central: ${tickets.status}`);
     });
   } finally {
     await browser.close();

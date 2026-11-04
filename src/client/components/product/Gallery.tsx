@@ -15,7 +15,10 @@ const pad = (n: number) => String(n).padStart(2, '0');
  */
 export function Gallery({ images, name, index, onIndex, related = [] }: { images: ImageDTO[]; name: string; index: number; onIndex: (i: number) => void; related?: ProductCardDTO[] }) {
   const [zoom, setZoom] = useState(false);
+  const [magnify, setMagnify] = useState<{ x: number; y: number } | null>(null);
   const touch = useRef<number | null>(null);
+  useEffect(() => { if (!zoom) setMagnify(null); }, [zoom]);
+  useEffect(() => { setMagnify(null); }, [index]);
   const total = images.length;
   const current = images[Math.min(index, total - 1)];
   const go = useCallback((d: number) => { if (total > 1) onIndex((index + d + total) % total); }, [index, total, onIndex]);
@@ -42,7 +45,8 @@ export function Gallery({ images, name, index, onIndex, related = [] }: { images
 
   return (
     <>
-      <div className="pdp-media" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+      <div className="pdp-media" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd} role="region" aria-roledescription="galeria" aria-label={`Fotos de ${name}${total > 1 ? ' — use as setas do teclado para navegar' : ''}`}
+        onKeyDown={(e) => { if (e.key === 'ArrowRight') { e.preventDefault(); go(1); } if (e.key === 'ArrowLeft') { e.preventDefault(); go(-1); } }}>
         <button className="pdp-media__main" onClick={() => setZoom(true)} aria-label={`Ampliar imagem ${index + 1} de ${total} de ${name}`}>
           <img
             key={current.url}
@@ -91,8 +95,12 @@ export function Gallery({ images, name, index, onIndex, related = [] }: { images
       <Dialog open={zoom} onClose={() => setZoom(false)} variant="fullscreen" labelledBy="lightbox-title" className="lightbox">
         <h2 id="lightbox-title" className="sr-only">{name} — imagem {index + 1} de {total}</h2>
         <button className="icon-btn lightbox__close" onClick={() => setZoom(false)} aria-label="Fechar visualização ampliada" data-autofocus><Icon name="close" /></button>
-        <div className="lightbox__stage" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
-          <img src={current.url} alt={current.alt || name} />
+        <div className={`lightbox__stage${magnify ? ' is-magnified' : ''}`} onTouchStart={(e) => { if (!magnify) onTouchStart(e); }} onTouchEnd={(e) => { if (!magnify) onTouchEnd(e); }}
+          onMouseMove={(e) => { if (!magnify) return; const r = e.currentTarget.getBoundingClientRect(); setMagnify({ x: ((e.clientX - r.left) / r.width) * 100, y: ((e.clientY - r.top) / r.height) * 100 }); }}>
+          <button className="lightbox__zoom" onClick={(e) => { const r = e.currentTarget.getBoundingClientRect(); setMagnify(magnify ? null : { x: ((e.clientX - r.left) / r.width) * 100 || 50, y: ((e.clientY - r.top) / r.height) * 100 || 50 }); }}
+            aria-label={magnify ? 'Reduzir zoom' : 'Ampliar detalhe (zoom)'} aria-pressed={Boolean(magnify)}>
+            <img src={current.url} srcSet={current.srcset ?? undefined} sizes="100vw" alt={current.alt || name} style={magnify ? { transform: 'scale(2.2)', transformOrigin: `${magnify.x}% ${magnify.y}%` } : undefined} />
+          </button>
         </div>
         {total > 1 ? (
           <div className="lightbox__nav">

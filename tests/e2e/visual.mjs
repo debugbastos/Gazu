@@ -33,6 +33,16 @@ export const PAGES = [
   { key: 'sacola', path: '/carrinho' },
   { key: 'entrar', path: '/entrar' },
   { key: 'entrega', path: '/entrega' },
+  { key: 'colecoes', path: '/colecoes' },
+  { key: 'colecao', path: '/colecao/essenciais' },
+  { key: 'lookbook', path: '/lookbook/cidade-em-movimento', full: true },
+  { key: 'journal', path: '/journal' },
+  { key: 'artigo', path: '/journal/como-montar-um-guarda-roupa-essencial' },
+  { key: 'monte-seu-look', path: '/monte-seu-look' },
+  { key: 'ajuda', path: '/ajuda' },
+  { key: 'atendimento', path: '/atendimento' },
+  { key: 'rastreio', path: '/rastreio' },
+  { key: 'checkout', path: '/checkout' },
   { key: '404', path: '/pagina-que-nao-existe' },
 ];
 
@@ -42,7 +52,7 @@ async function audit(page) {
     const doc = document.documentElement;
     if (doc.scrollWidth > doc.clientWidth + 1) {
       const wide = [...document.querySelectorAll('body *')]
-        .filter((el) => { const r = el.getBoundingClientRect(); return r.width > 0 && r.right > doc.clientWidth + 1 && getComputedStyle(el).position !== 'fixed' && !el.closest('[class*="strip"], [class*="band__inner"], .subcats, .lookbook__tiles, .pdp-strip, .account__nav ul'); })
+        .filter((el) => { const r = el.getBoundingClientRect(); return r.width > 0 && r.right > doc.clientWidth + 1 && getComputedStyle(el).position !== 'fixed' && !el.closest('[class*="strip"], [class*="band__inner"], .subcats, .lookbook__tiles, .pdp-strip, .account__nav ul, .builder__row'); })
         .slice(0, 5).map((el) => `${el.tagName.toLowerCase()}.${[...el.classList].join('.')}`);
       issues.push(`rolagem horizontal (${doc.scrollWidth}px > ${doc.clientWidth}px): ${wide.join(', ')}`);
     }
@@ -75,6 +85,8 @@ async function main() {
   const report = [];
   for (const vp of VIEWPORTS) {
     const ctx = await browser.newContext({ viewport: { width: vp.width, height: vp.height }, isMobile: vp.isMobile, hasTouch: vp.hasTouch, deviceScaleFactor: vp.deviceScaleFactor ?? 1, reducedMotion: 'no-preference' });
+    // A faixa de cookies é verificada no teste de fluxo (run.mjs); aqui a escolha já está registrada para não cobrir as capturas.
+    await ctx.addInitScript(() => { try { localStorage.setItem('gazu.consent.v1', JSON.stringify({ analytics: false, decidedAt: new Date().toISOString() })); } catch { /* sem armazenamento */ } });
     for (const pg of PAGES) {
       if (ONLY && !ONLY.includes(pg.key)) continue;
       const page = await ctx.newPage();

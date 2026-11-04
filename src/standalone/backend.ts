@@ -12,7 +12,7 @@ import type {
 // ---------------------------------------------------------------- tipos das "tabelas"
 export interface ProductRow { id: number; slug: string; name: string; description: string; details: string | null; audience: ProductCardDTO['audience']; product_type: string; primary_category_id: number | null; price_cents: number; promo_price_cents: number | null; promo_starts_at: string | null; promo_ends_at: string | null; is_active: number; is_featured: number; is_demo: number; color_confirmed: number; seo_title: string | null; seo_description: string | null; created_at: string; updated_at: string }
 export interface ImageRow { id: number; product_id: number; url: string; srcset: string | null; width: number | null; height: number | null; alt: string; color_name: string | null; object_position: string; position: number }
-export interface VariantRow { id: number; product_id: number; sku: string; color_name: string; color_hex: string | null; size: string; size_order: number; price_cents: number | null; stock: number; is_active: number }
+export interface VariantRow { id: number; product_id: number; sku: string; color_name: string; color_hex: string | null; size: string; size_order: number; price_cents: number | null; cost_cents?: number | null; stock: number; is_active: number }
 export interface CategoryRow { id: number; slug: string; name: string; description: string | null; parent_id: number | null; position: number; is_active: number; image_url: string | null }
 export interface CouponRow { id: number; code: string; description: string; discount_type: 'percent' | 'fixed'; value: number; min_order_cents: number; starts_at: string | null; ends_at: string | null; max_uses: number | null; max_uses_per_user: number | null; is_active: number; is_demo: number; created_at: string; category_ids: number[]; product_ids: number[] }
 interface ShippingRuleRow { id: number; name: string; cep_start: string; cep_end: string; price_cents: number; min_days: number; max_days: number; free_above_cents: number | null; is_active: number; position: number }
@@ -33,13 +33,21 @@ export interface Settings {
   social: { instagram: string; tiktok: string; facebook: string };
 }
 
-export interface SeedData {
+export interface CatalogSeed {
   categories: CategoryRow[]; products: ProductRow[]; product_categories: { product_id: number; category_id: number }[]; product_images: ImageRow[];
   product_variants: VariantRow[]; coupons: CouponRow[]; shipping_rules: ShippingRuleRow[]; settings: Settings;
 }
+/** Dados embutidos no index.html: catálogo editável + retrato (somente leitura) do conteúdo público do servidor real. */
+export interface SeedData extends CatalogSeed {
+  serverConfig: PublicConfigDTO | null;
+  snapshot: Record<string, unknown>;
+  reviewsTemplate: unknown;
+  extras: Record<string, Record<string, unknown>>;
+}
 
-interface State extends SeedData {
+interface State extends CatalogSeed {
   version: number;
+  product_extra: Record<number, Record<string, unknown>>;
   seq: Record<string, number>;
   users: UserRow[]; sessionUserId: string | null;
   carts: Record<string, CartItemInput[]>; favorites: Record<string, number[]>;
@@ -48,8 +56,13 @@ interface State extends SeedData {
 }
 
 // ---------------------------------------------------------------- infraestrutura
-const STORAGE_KEY = 'gazu.standalone.v1';
-export const DEMO_ADMIN = { email: 'admin@gazu.demo', password: 'gazu2026' };
+const STORAGE_KEY = 'gazu.standalone.v2';
+const STATE_VERSION = 2;
+// Conta do painel de demonstração: só existe neste navegador, entra por botão (sem senha conhecida) e não acessa nada real.
+const DEMO_ADMIN_EMAIL = 'painel@demonstracao.local';
+/** Permissões do painel na versão HTML: apenas os módulos que funcionam localmente. */
+const DEMO_ADMIN_PERMISSIONS = ['catalog.read', 'catalog.write', 'orders.read', 'orders.write', 'customers.read', 'marketing.read'];
+let STATIC: Pick<SeedData, 'serverConfig' | 'snapshot' | 'reviewsTemplate' | 'extras'> = { serverConfig: null, snapshot: {}, reviewsTemplate: null, extras: {} };
 const ORDER_WINDOW_MIN = 60;
 
 export class HttpErr extends Error {
@@ -86,17 +99,21 @@ const randomId = () => (crypto.randomUUID ? crypto.randomUUID() : `${Date.now().
 /** Inicializa o banco local: usa os dados salvos neste navegador ou cria a partir do catálogo embutido. */
 export async function initBackend(seed: SeedData, assetResolver: (u: string) => string): Promise<void> {
   resolveAsset = assetResolver;
+  const { serverConfig, snapshot, reviewsTemplate, extras, ...catalog } = seed;
+  STATIC = { serverConfig, snapshot, reviewsTemplate, extras };
   try {
+    localStorage.removeItem('gazu.standalone.v1'); // formato anterior
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) { const parsed = JSON.parse(raw) as State; if (parsed.version === 1) { S = parsed; return; } }
+    if (raw) { const parsed = JSON.parse(raw) as State; if (parsed.version === STATE_VERSION) { S = parsed; return; } }
   } catch { /* dados corrompidos: recria */ }
   S = {
-    ...clone(seed), version: 1, seq: {}, users: [], sessionUserId: null, carts: {}, favorites: {}, addresses: [], orders: [], order_items: [], payments: [],
+    ...clone(catalog), version: STATE_VERSION, product_extra: {}, seq: {}, users: [], sessionUserId: null, carts: {}, favorites: {}, addresses: [], orders: [], order_items: [], payments: [],
     order_events: [], inventory_movements: [], coupon_redemptions: [], audit_log: [],
   };
   const max = (rows: { id: number }[]) => rows.reduce((m, r) => Math.max(m, r.id), 0);
   S.seq = { categories: max(S.categories), products: max(S.products), product_images: max(S.product_images), product_variants: max(S.product_variants), coupons: max(S.coupons), shipping_rules: max(S.shipping_rules) };
-  S.users.push({ id: randomId(), email: DEMO_ADMIN.email, password_hash: await hashPassword(DEMO_ADMIN.password), role: 'admin', name: 'Administrador (demonstração)', phone: null, email_verified_at: nowIso(), created_at: nowIso() });
+  // Senha aleatória descartada: a conta só é acessada pelo botão "entrar no painel de demonstração".
+  S.users.push({ id: randomId(), email: DEMO_ADMIN_EMAIL, password_hash: await hashPassword(randomId() + randomId()), role: 'admin', name: 'Painel (demonstração)', phone: null, email_verified_at: nowIso(), created_at: nowIso() });
   try { persist(); } catch { /* sem armazenamento: funciona só em memória */ }
 }
 
@@ -106,6 +123,20 @@ export function resetDemoData(): void {
 
 // ---------------------------------------------------------------- catálogo
 const img = (u: string | null | undefined): string | null => (u ? resolveAsset(u) : null);
+/** Ajusta respostas do retrato do servidor: imagens embutidas no arquivo e sem srcset (não há variações de tamanho aqui). */
+function localizeAssets<T>(v: T): T {
+  const walk = (x: unknown, key?: string): unknown => {
+    if (typeof x === 'string') {
+      if (key === 'srcset') return null;
+      if (x.startsWith('/assets/')) return resolveAsset(x);
+      return x.includes('/assets/') ? x.replace(/\/assets\/[A-Za-z0-9_./-]+\.(?:webp|png|jpe?g)/g, (m) => resolveAsset(m)) : x;
+    }
+    if (Array.isArray(x)) return x.map((y) => walk(y));
+    if (x && typeof x === 'object') return Object.fromEntries(Object.entries(x).map(([k, y]) => [k, walk(y, k)]));
+    return x;
+  };
+  return walk(clone(v)) as T;
+}
 const toImage = (r: ImageRow): ImageDTO => ({ url: img(r.url)!, srcset: null, width: r.width, height: r.height, alt: r.alt, position: r.object_position, colorName: r.color_name });
 const toCategory = (r: CategoryRow): CategoryDTO => ({ id: r.id, slug: r.slug, name: r.name, description: r.description, imageUrl: img(r.image_url), parentId: r.parent_id, position: r.position, isActive: Boolean(r.is_active) });
 
@@ -163,10 +194,18 @@ function cardsFor(rows: ProductRow[]): ProductCardDTO[] {
     const vs = activeVariants(r.id);
     const colors = new Map<string, ColorDTO>();
     for (const v of vs) colors.set(v.color_name, { name: v.color_name, hex: v.color_hex });
-    const first = imagesOf(r.id)[0];
+    const ims = imagesOf(r.id);
+    const first = ims[0];
+    const second = ims.slice(1).find((i) => !i.color_name);
+    const byColor: Record<string, ImageDTO> = {};
+    for (const im of ims) if (im.color_name && !byColor[im.color_name]) byColor[im.color_name] = toImage(im);
+    const stock = vs.reduce((s, v) => s + v.stock, 0);
+    const newDays = (S.settings as unknown as { operations?: { newArrivalsDays?: number } }).operations?.newArrivalsDays ?? 30;
     return {
       id: r.id, slug: r.slug, name: r.name, type: r.product_type, audience: r.audience, priceCents: r.price_cents, promoPriceCents: activePromo(r),
-      image: first ? toImage(first) : null, colors: [...colors.values()], available: vs.reduce((s, v) => s + v.stock, 0) > 0, isDemo: Boolean(r.is_demo), createdAt: r.created_at,
+      image: first ? toImage(first) : null, colors: [...colors.values()], available: stock > 0, isDemo: Boolean(r.is_demo), createdAt: r.created_at,
+      hoverImage: second ? toImage(second) : null, colorImages: Object.keys(byColor).length ? byColor : undefined,
+      isNew: r.created_at >= new Date(Date.now() - newDays * 86400_000).toISOString(), lowStock: stock > 0 && stock <= 3,
     };
   });
 }
@@ -257,8 +296,15 @@ function productBySlug(slug: string): ProductDetailDTO | null {
   return {
     ...card, description: p.description, details: p.details, images: imagesOf(p.id).map(toImage), variants, breadcrumbs: [...crumbs(chain), { name: p.name, href: `/produto/${p.slug}` }],
     categorySlugs: catsOf(p.id).map((id) => S.categories.find((c) => c.id === id)?.slug ?? ''), colorConfirmed: Boolean(p.color_confirmed), related: cardsFor(related),
+    ...localizeAssets(STATIC.extras[p.slug] ?? {}),
+    ...pickText(S.product_extra[p.id]),
   };
 }
+const pickText = (e: Record<string, unknown> | undefined) => {
+  const out: Record<string, unknown> = {};
+  for (const k of ['brand', 'composition', 'careInstructions', 'fitNotes']) if (e && typeof e[k] === 'string' && e[k]) out[k] = e[k];
+  return out;
+};
 
 function homeSections() {
   const shown = new Set<number>();
@@ -427,11 +473,15 @@ const productSchema = z.object({
   audience: z.enum(['masculino', 'feminino', 'unissex', 'menino', 'menina']), productType: z.string().trim().min(2).max(60), priceCents: money, promoPriceCents: money.optional().nullable(),
   promoStartsAt: isoDate, promoEndsAt: isoDate, categoryIds: z.array(z.number().int().positive()).min(1, 'Selecione ao menos uma categoria.').max(10), primaryCategoryId: z.number().int().positive(),
   isActive: z.boolean(), isFeatured: z.boolean(), isDemo: z.boolean(), colorConfirmed: z.boolean(), seoTitle: z.string().trim().max(70).optional().nullable(), seoDescription: z.string().trim().max(170).optional().nullable(),
+  brand: z.string().trim().max(60).optional().nullable(), composition: z.string().trim().max(1000).optional().nullable(), careInstructions: z.string().trim().max(1000).optional().nullable(),
+  fitNotes: z.string().trim().max(1000).optional().nullable(), costCents: z.number().int().min(0).max(100_000_00).optional().nullable(), weightGrams: z.number().int().positive().max(50_000).optional().nullable(),
+  lengthCm: z.number().int().positive().max(200).optional().nullable(), widthCm: z.number().int().positive().max(200).optional().nullable(), heightCm: z.number().int().positive().max(200).optional().nullable(),
+  sizeGuideId: z.number().int().positive().optional().nullable(),
 }).refine((p) => !p.promoPriceCents || p.promoPriceCents < p.priceCents, { message: 'O preço promocional deve ser menor que o preço.', path: ['promoPriceCents'] })
   .refine((p) => p.categoryIds.includes(p.primaryCategoryId), { message: 'A categoria principal deve estar entre as categorias selecionadas.', path: ['primaryCategoryId'] });
 const variantSchema = z.object({
   sku: z.string().trim().min(2).max(60).regex(/^[A-Za-z0-9._-]+$/, 'SKU com caracteres inválidos.'), colorName: z.string().trim().min(1).max(60), colorHex: z.string().trim().regex(/^#[0-9a-fA-F]{6}$/).optional().nullable(),
-  size: z.string().trim().min(1).max(20), sizeOrder: z.number().int().min(0).max(999).default(0), priceCents: money.optional().nullable(), isActive: z.boolean().default(true), initialStock: z.number().int().min(0).max(100000).optional(),
+  size: z.string().trim().min(1).max(20), sizeOrder: z.number().int().min(0).max(999).default(0), priceCents: money.optional().nullable(), costCents: z.number().int().min(0).max(100_000_00).optional().nullable(), isActive: z.boolean().default(true), initialStock: z.number().int().min(0).max(100000).optional(),
 });
 const couponSchema = z.object({
   code: z.string().trim().toUpperCase().min(3).max(40).regex(/^[A-Z0-9_-]+$/, 'Use letras, números, _ ou -.'), description: z.string().trim().max(200).default(''), discountType: z.enum(['percent', 'fixed']),
@@ -458,15 +508,25 @@ function route(method: string, path: string, h: Handler) {
 const requireUser = (c: Ctx): UserRow => { if (!c.user) throw new HttpErr(401, 'Faça login para continuar.', 'unauthenticated'); return c.user; };
 const requireAdmin = (c: Ctx): UserRow => { const u = requireUser(c); if (u.role !== 'admin') throw new HttpErr(403, 'Acesso restrito a administradores.', 'forbidden'); return u; };
 const intParam = (v: string | undefined) => { const n = Number(v); if (!Number.isSafeInteger(n) || n <= 0) throw new HttpErr(400, 'Parâmetro inválido.', 'bad_request'); return n; };
-const me = (u: UserRow): MeDTO => ({ id: u.id, email: u.email, name: u.name, role: u.role, emailVerified: Boolean(u.email_verified_at), hasPassword: true, googleLinked: false });
+const me = (u: UserRow): MeDTO => ({ id: u.id, email: u.email, name: u.name, role: u.role, emailVerified: Boolean(u.email_verified_at), hasPassword: u.email !== DEMO_ADMIN_EMAIL, googleLinked: false, ...(u.role === 'admin' ? { staffRole: null, permissions: DEMO_ADMIN_PERMISSIONS } : {}) });
 const audit = (u: UserRow, action: string, entity: string, id: string | number) => S.audit_log.push({ id: nextId('audit_log'), actor: `admin:${u.id}`, action, entity, entity_id: String(id), created_at: nowIso() });
 
 export function publicConfig(): PublicConfigDTO {
+  const base = STATIC.serverConfig;
+  const s = S.settings as unknown as PublicConfigDTO['settings'];
   return {
-    demoMode: true, googleAuth: false,
-    payments: { provider: 'demo', pix: false, creditCard: false, demo: true, mpPublicKey: null, maxInstallments: 1 },
-    shipping: { provider: 'demo', configured: true }, settings: clone(S.settings), categories: categoryTree(),
-    standalone: { notice: 'Versão HTML de demonstração — dados salvos apenas neste navegador; pagamento e frete simulados.', demoLogin: DEMO_ADMIN },
+    demoMode: true, googleAuth: false, guestCheckout: false,
+    payments: { provider: 'demo', pix: false, creditCard: false, boleto: false, demo: true, mpPublicKey: null, maxInstallments: 1, boletoDays: 3, pixMinutes: 30 },
+    shipping: { provider: 'demo', configured: true },
+    announcements: base?.announcements ?? [],
+    settings: {
+      ...(base?.settings ?? {}),
+      announcements: base?.settings.announcements ?? [],
+      heroTagline: s.heroTagline, heroCollectionLabel: s.heroCollectionLabel, showAccessoriesOnHome: s.showAccessoriesOnHome,
+      contact: s.contact, company: s.company, social: s.social,
+    },
+    categories: categoryTree(),
+    standalone: { notice: 'Versão HTML de demonstração — não substitui a loja completa. Dados só neste navegador; pagamento e frete simulados.', demoAdmin: true },
   };
 }
 
@@ -530,6 +590,12 @@ route('POST', '/api/auth/login', async (c) => {
   return { ok: true };
 });
 route('POST', '/api/auth/logout', () => { S.sessionUserId = null; return { ok: true }; });
+route('POST', '/api/auth/demo-admin', () => {
+  const u = S.users.find((x) => x.email === DEMO_ADMIN_EMAIL && x.role === 'admin');
+  if (!u) throw new HttpErr(404, 'Painel de demonstração indisponível. Limpe os dados do site e recarregue.', 'not_found');
+  S.sessionUserId = u.id;
+  return { ok: true };
+});
 route('POST', '/api/auth/forgot-password', () => ({ message: 'Na versão HTML de demonstração não há envio de e-mail. No site completo, você receberia um link para redefinir a senha.' }));
 route('POST', '/api/auth/reset-password', () => { throw new HttpErr(400, 'Redefinição por link não está disponível na versão de demonstração.', 'invalid_token'); });
 route('POST', '/api/auth/resend-verification', () => ({ ok: true }));
@@ -638,6 +704,7 @@ route('POST', '/api/checkout/payments/:id/simulate', (c) => {
 });
 
 // ---------------------------------------------------------------- painel administrativo
+const PAID = ['paid', 'processing', 'shipped', 'delivered'];
 function productAdminDetail(id: number) {
   const p = productById(id);
   if (!p) throw new HttpErr(404, 'Produto não encontrado.', 'not_found');
@@ -647,10 +714,20 @@ function productAdminDetail(id: number) {
     colorConfirmed: Boolean(p.color_confirmed), seoTitle: p.seo_title, seoDescription: p.seo_description, createdAt: p.created_at, updatedAt: p.updated_at, categoryIds: catsOf(p.id),
     images: imagesOf(p.id).map((i) => ({ id: i.id, url: img(i.url), srcset: null, alt: i.alt, colorName: i.color_name, position: i.position, objectPosition: i.object_position, width: i.width, height: i.height })),
     variants: S.product_variants.filter((v) => v.product_id === p.id).sort((a, b) => a.color_name.localeCompare(b.color_name) || a.size_order - b.size_order)
-      .map((v) => ({ id: v.id, sku: v.sku, colorName: v.color_name, colorHex: v.color_hex, size: v.size, sizeOrder: v.size_order, priceCents: v.price_cents, stock: v.stock, isActive: Boolean(v.is_active) })),
+      .map((v) => ({ id: v.id, sku: v.sku, colorName: v.color_name, colorHex: v.color_hex, size: v.size, sizeOrder: v.size_order, priceCents: v.price_cents, costCents: v.cost_cents ?? null, stock: v.stock, isActive: Boolean(v.is_active) })),
+    ...productExtraFields(p),
+    status: p.is_active ? 'published' : 'draft', issues: [] as { code: string; severity: string; message: string }[], publishedAt: null, collectionIds: [] as number[],
+    soldUnits: S.order_items.filter((i) => i.product_id === p.id && S.orders.some((o) => o.id === i.order_id && PAID.includes(o.status))).reduce((s, i) => s + i.quantity, 0),
   };
 }
-const PAID = ['paid', 'processing', 'shipped', 'delivered'];
+const EXTRA_FIELDS = ['brand', 'composition', 'careInstructions', 'fitNotes', 'costCents', 'weightGrams', 'lengthCm', 'widthCm', 'heightCm', 'sizeGuideId'] as const;
+function productExtraFields(p: ProductRow): Record<string, unknown> {
+  const seeded = STATIC.extras[p.slug] ?? {};
+  const own = S.product_extra[p.id];
+  const out: Record<string, unknown> = {};
+  for (const k of EXTRA_FIELDS) out[k] = own ? own[k] ?? null : (k === 'sizeGuideId' ? (seeded.sizeGuide as { id?: number } | undefined)?.id ?? null : seeded[k] ?? null);
+  return out;
+}
 route('GET', '/api/admin/dashboard', (c) => {
   requireAdmin(c);
   const real = S.orders.filter((o) => !o.is_demo);
@@ -663,6 +740,7 @@ route('GET', '/api/admin/dashboard', (c) => {
       .map((v) => ({ id: v.id, sku: v.sku, colorName: v.color_name, size: v.size, stock: v.stock, name: productById(v.product_id)!.name, productId: v.product_id })),
     lowStockCount: low.length,
     recentOrders: [...S.orders].sort((a, b) => b.created_at.localeCompare(a.created_at)).slice(0, 8).map((o) => ({ number: o.number, status: o.status, totalCents: o.total_cents, isDemo: o.is_demo, createdAt: o.created_at })),
+    openTickets: 0, pendingReviews: 0, openReturns: 0, waitlist: 0, activeCoupons: S.coupons.filter((x) => x.is_active).length, activeCampaigns: 0,
   };
 });
 route('GET', '/api/admin/products', (c) => {
@@ -671,11 +749,12 @@ route('GET', '/api/admin/products', (c) => {
   const stockOf = (id: number) => S.product_variants.filter((v) => v.product_id === id && v.is_active).reduce((s, v) => s + v.stock, 0);
   let rows = [...S.products];
   if (q) rows = rows.filter((p) => norm(p.name).includes(q) || p.slug.includes(q) || S.product_variants.some((v) => v.product_id === p.id && norm(v.sku).includes(q)));
-  if (status === 'ativos') rows = rows.filter((p) => p.is_active); if (status === 'inativos') rows = rows.filter((p) => !p.is_active);
+  if (status === 'ativos') rows = rows.filter((p) => p.is_active); if (status === 'inativos' || status === 'rascunhos') rows = rows.filter((p) => !p.is_active);
+  if (status === 'arquivados' || status === 'lixeira') rows = [];
   if (status === 'demo') rows = rows.filter((p) => p.is_demo); if (status === 'sem-estoque') rows = rows.filter((p) => stockOf(p.id) === 0);
   rows.sort((a, b) => b.updated_at.localeCompare(a.updated_at) || b.id - a.id);
   return {
-    items: rows.slice((page - 1) * 30, page * 30).map((p) => ({ id: p.id, slug: p.slug, name: p.name, priceCents: p.price_cents, promoPriceCents: p.promo_price_cents, isActive: p.is_active, isFeatured: p.is_featured, isDemo: p.is_demo, image: img(imagesOf(p.id)[0]?.url), stock: stockOf(p.id), variantCount: S.product_variants.filter((v) => v.product_id === p.id).length, category: S.categories.find((x) => x.id === p.primary_category_id)?.name ?? null })),
+    items: rows.slice((page - 1) * 30, page * 30).map((p) => ({ id: p.id, slug: p.slug, name: p.name, priceCents: p.price_cents, promoPriceCents: p.promo_price_cents, isActive: p.is_active, isFeatured: p.is_featured, isDemo: p.is_demo, image: img(imagesOf(p.id)[0]?.url), stock: stockOf(p.id), variantCount: S.product_variants.filter((v) => v.product_id === p.id).length, category: S.categories.find((x) => x.id === p.primary_category_id)?.name ?? null, status: p.is_active ? 'published' : 'draft', issueCount: 0, blocking: 0 })),
     total: rows.length, page, pages: Math.max(1, Math.ceil(rows.length / 30)),
   };
 });
@@ -687,6 +766,9 @@ function writeProduct(u: UserRow, b: z.infer<typeof productSchema>, id?: number)
   if (id) { const p = productById(id); if (!p) throw new HttpErr(404, 'Produto não encontrado.', 'not_found'); Object.assign(p, data); }
   else { id = nextId('products'); S.products.push({ id, ...data, created_at: nowIso() }); }
   S.product_categories = S.product_categories.filter((pc) => pc.product_id !== id).concat([...new Set(b.categoryIds)].map((cid) => ({ product_id: id!, category_id: cid })));
+  const extra: Record<string, unknown> = {};
+  for (const k of EXTRA_FIELDS) extra[k] = (b as Record<string, unknown>)[k] ?? null;
+  S.product_extra[id] = extra;
   audit(u, 'product.save', 'product', id);
   return productAdminDetail(id);
 }
@@ -698,7 +780,7 @@ route('POST', '/api/admin/products/:id/variants', (c) => {
   if (S.product_variants.some((v) => v.sku === b.sku)) throw new HttpErr(409, 'SKU já utilizado.', 'sku_taken', { fieldErrors: { sku: ['SKU em uso.'] } });
   if (S.product_variants.some((v) => v.product_id === pid && v.color_name === b.colorName && v.size === b.size)) throw new HttpErr(409, 'Esta combinação de cor e tamanho já existe.', 'variant_exists');
   const id = nextId('product_variants');
-  S.product_variants.push({ id, product_id: pid, sku: b.sku, color_name: b.colorName, color_hex: b.colorHex ?? null, size: b.size, size_order: b.sizeOrder, price_cents: b.priceCents ?? null, stock: 0, is_active: b.isActive ? 1 : 0 });
+  S.product_variants.push({ id, product_id: pid, sku: b.sku, color_name: b.colorName, color_hex: b.colorHex ?? null, size: b.size, size_order: b.sizeOrder, price_cents: b.priceCents ?? null, cost_cents: b.costCents ?? null, stock: 0, is_active: b.isActive ? 1 : 0 });
   if (b.initialStock) moveStock(id, b.initialStock, 'initial', `admin:${u.id}`, null, 'Estoque inicial');
   audit(u, 'variant.create', 'variant', id);
   return productAdminDetail(pid);
@@ -707,7 +789,7 @@ route('PUT', '/api/admin/variants/:id', (c) => {
   const u = requireAdmin(c); const id = intParam(c.params.id); const b = variantSchema.omit({ initialStock: true }).parse(c.body);
   const v = S.product_variants.find((x) => x.id === id); if (!v) throw new HttpErr(404, 'Variante não encontrada.', 'not_found');
   if (S.product_variants.some((x) => x.sku === b.sku && x.id !== id)) throw new HttpErr(409, 'SKU já utilizado.', 'sku_taken');
-  Object.assign(v, { sku: b.sku, color_name: b.colorName, color_hex: b.colorHex ?? null, size: b.size, size_order: b.sizeOrder, price_cents: b.priceCents ?? null, is_active: b.isActive ? 1 : 0 });
+  Object.assign(v, { sku: b.sku, color_name: b.colorName, color_hex: b.colorHex ?? null, size: b.size, size_order: b.sizeOrder, price_cents: b.priceCents ?? null, cost_cents: b.costCents ?? null, is_active: b.isActive ? 1 : 0 });
   audit(u, 'variant.update', 'variant', id);
   return productAdminDetail(v.product_id);
 });
@@ -835,10 +917,48 @@ route('GET', '/api/admin/customers', (c) => {
 
 // ---------------------------------------------------------------- despacho
 /** Executa uma "requisição" local. Alterações são gravadas apenas se a operação inteira der certo (transação). */
+// ---------------------------------------------------------------- conteúdo editorial (retrato do servidor real)
+function fromSnapshot(c: Ctx, pathname: string): unknown {
+  const qs = c.query.toString();
+  const hit = STATIC.snapshot[qs ? `${pathname}?${qs}` : pathname] ?? STATIC.snapshot[pathname];
+  if (hit === undefined) throw new HttpErr(404, 'Conteúdo não encontrado.', 'not_found');
+  return localizeAssets(hit);
+}
+for (const p of ['/api/content/home', '/api/collections', '/api/archive', '/api/lookbooks', '/api/journal', '/api/faq', '/api/looks/builder', '/api/newsletter/consent-text']) {
+  route('GET', p, (c) => fromSnapshot(c, p));
+}
+for (const base of ['/api/collections', '/api/lookbooks', '/api/journal', '/api/pages', '/api/size-guides']) {
+  route('GET', `${base}/:key`, (c) => fromSnapshot(c, `${base}/${c.params.key}`));
+}
+route('GET', '/api/products/:id/reviews', () => STATIC.reviewsTemplate ?? { enabled: false, summary: { count: 0, average: null, distribution: {} }, reviews: [], eligibility: null });
+// Sem efeito na demonstração (nenhum dado de navegação é coletado aqui).
+route('POST', '/api/analytics/events', () => ({ ok: true }));
+route('POST', '/api/consent', () => ({ ok: true }));
+route('GET', '/api/account/viewed', () => ({ ids: [] }));
+route('POST', '/api/account/viewed', (c) => ({ ids: z.object({ productIds: z.array(z.number().int().positive()).max(50) }).parse(c.body).productIds }));
+// Recursos que dependem do servidor (e-mail, provedores, banco): indisponíveis no arquivo HTML.
+const UNAVAILABLE = 'Disponível apenas na loja completa (servidor). Esta versão HTML é uma demonstração e não envia e-mails nem guarda dados fora deste navegador.';
+const unavailable = () => { throw new HttpErr(501, UNAVAILABLE, 'standalone_unavailable'); };
+for (const [m, p] of [
+  ['POST', '/api/newsletter'], ['POST', '/api/stock-alerts'], ['POST', '/api/products/:id/reviews'], ['POST', '/api/support/tickets'], ['GET', '/api/support/tickets/:n'], ['POST', '/api/support/tickets/:n/messages'],
+  ['GET', '/api/account/tickets'], ['GET', '/api/account/tickets/:n'], ['GET', '/api/account/privacy'], ['POST', '/api/account/privacy/requests'], ['PUT', '/api/account/marketing'],
+  ['GET', '/api/orders/:n/returns'], ['POST', '/api/orders/:n/returns'], ['POST', '/api/orders/guest-access'], ['POST', '/api/orders/track'],
+  ['POST', '/api/checkout/guest-orders'], ['GET', '/api/checkout/installments'], ['GET', '/api/looks/products'],
+  ['POST', '/api/admin/products/:id/archive'], ['POST', '/api/admin/products/:id/restore'], ['POST', '/api/admin/products/:id/duplicate'], ['DELETE', '/api/admin/products/:id'],
+] as const) route(m, p, unavailable);
+// Página do pedido e cancelamento pelo cliente (na demonstração, apenas para quem está logado e é dono do pedido).
+route('GET', '/api/orders/:n', (c) => { if (!c.user) unavailable(); return getOrder(ownedOrder(c.params.n!, c.user!)); });
+route('POST', '/api/orders/:n/cancel', (c) => { const u = requireUser(c); const o = ownedOrder(c.params.n!, u); cancelOrder(o, 'Pedido cancelado pelo cliente.', `customer:${u.id}`); return getOrder(o); });
+route('POST', '/api/admin/products/:id/publish', (c) => { const u = requireAdmin(c); const p = productById(intParam(c.params.id)); if (!p) throw new HttpErr(404, 'Produto não encontrado.', 'not_found'); p.is_active = 1; audit(u, 'product.publish', 'product', p.id); return productAdminDetail(p.id); });
+route('POST', '/api/admin/products/:id/unpublish', (c) => { const u = requireAdmin(c); const p = productById(intParam(c.params.id)); if (!p) throw new HttpErr(404, 'Produto não encontrado.', 'not_found'); p.is_active = 0; audit(u, 'product.unpublish', 'product', p.id); return productAdminDetail(p.id); });
+
 export async function handle(method: string, url: string, body: unknown): Promise<unknown> {
   const u = new URL(url, 'http://gazu.local');
   const r = routes.find((x) => x.method === method && x.re.test(u.pathname));
-  if (!r) throw new HttpErr(routes.some((x) => x.re.test(u.pathname)) ? 405 : 404, 'Rota não encontrada.', 'not_found');
+  if (!r) {
+    if (u.pathname.startsWith('/api/admin/') || u.pathname.startsWith('/api/account/')) throw new HttpErr(501, UNAVAILABLE, 'standalone_unavailable');
+    throw new HttpErr(routes.some((x) => x.re.test(u.pathname)) ? 405 : 404, 'Rota não encontrada.', 'not_found');
+  }
   const m = r.re.exec(u.pathname)!;
   const params: Record<string, string> = {};
   r.keys.forEach((k, i) => (params[k] = decodeURIComponent(m[i + 1] ?? '')));

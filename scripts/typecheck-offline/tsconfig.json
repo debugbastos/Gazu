@@ -1,0 +1,6 @@
+{
+  "//": "Checagem de tipos do front-end SEM @types/react (ambiente sem acesso ao registro npm). Usa declarações simplificadas de React (react-shim.d.ts). Erros TS7006/TS7031 (parâmetros implícitos) são limitação do shim. Com npm install completo, use `npm run typecheck`.",
+  "extends": "../../tsconfig.json",
+  "compilerOptions": { "noEmit": true, "types": ["node"] },
+  "include": ["../../src/client", "../../src/shared", "../../src/standalone", "../../src/client/assets.d.ts", "./react-shim.d.ts"]
+}

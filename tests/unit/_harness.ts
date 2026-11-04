@@ -28,20 +28,23 @@ export function boot(): Promise<string> {
 /** Cliente HTTP com cookie de sessão e cabeçalho Origin (o servidor exige mesma origem em POST/PUT/DELETE). */
 export async function client(): Promise<Client> {
   const base = await boot();
-  let cookie = '';
+  const jar = new Map<string, string>();
   return {
     base,
     async req(method, path, body, headers = {}) {
       const resp = await fetch(base + path, {
         method,
-        headers: { Origin: base, Accept: 'application/json', ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}), ...(cookie ? { Cookie: cookie } : {}), ...headers },
+        headers: { Origin: base, Accept: 'application/json', ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}), ...(jar.size ? { Cookie: [...jar].map(([k, v]) => `${k}=${v}`).join('; ') } : {}), ...headers },
         body: body !== undefined ? JSON.stringify(body) : undefined,
         redirect: 'manual',
       });
       const set = resp.headers.getSetCookie?.() ?? [];
       for (const c of set) {
         const [pair] = c.split(';');
-        if (pair?.startsWith('gazu_session=')) cookie = pair.endsWith('=') ? '' : pair;
+        const i = pair!.indexOf('=');
+        const name = pair!.slice(0, i);
+        const value = pair!.slice(i + 1);
+        if (!value || /Max-Age=0/i.test(c)) jar.delete(name); else jar.set(name, value);
       }
       const text = await resp.text();
       let parsed: unknown = text;
@@ -62,17 +65,17 @@ export async function customer(): Promise<Client & { email: string }> {
 }
 
 /** Cria um administrador diretamente no banco (como faz o comando admin:create) e autentica. */
-export async function admin(): Promise<Client> {
+export async function admin(role: 'owner' | 'manager' | 'catalog' | 'finance' | 'support' | 'marketing' = 'owner'): Promise<Client & { id: string }> {
   await boot();
   const db = getDb();
   const email = `admin${++seq}@teste.dev`;
   const id = crypto.randomUUID();
-  db.run("INSERT INTO users (id, email, password_hash, role, email_verified_at) VALUES (?, ?, ?, 'admin', ?)", id, email, await hashPassword('adminSeguro123'), new Date().toISOString());
+  db.run("INSERT INTO users (id, email, password_hash, role, staff_role, email_verified_at) VALUES (?, ?, ?, 'admin', ?, ?)", id, email, await hashPassword('adminSeguro123'), role, new Date().toISOString());
   db.run('INSERT INTO profiles (user_id, full_name) VALUES (?, ?)', id, 'Admin');
   const c = await client();
   const r = await c.req('POST', '/api/auth/login', { email, password: 'adminSeguro123' });
   if (r.status !== 200) throw new Error(`login admin falhou: ${r.status}`);
-  return c;
+  return Object.assign(c, { id });
 }
 
 /** Primeira variante com estoque de um produto. */

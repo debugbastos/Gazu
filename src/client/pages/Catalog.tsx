@@ -5,7 +5,8 @@ import { formatPrice } from '../../shared/format';
 import type { CatalogResultDTO, FacetValue } from '../../shared/types';
 import { ProductGrid, ProductGridSkeleton } from '../components/catalog/ProductCard';
 import { Icon } from '../components/ui/Icon';
-import { Breadcrumbs, Button, Checkbox, Dialog, EmptyState, ErrorState, Pagination } from '../components/ui/ui';
+import { Breadcrumbs, Button, Checkbox, Dialog, EmptyState, ErrorState, Notice, Pagination } from '../components/ui/ui';
+import { track } from '../lib/analytics';
 import { NotFoundPage } from './Static';
 
 const FILTER_KEYS = ['publico', 'tamanho', 'cor', 'tipo'] as const;
@@ -91,7 +92,13 @@ export function CatalogPage({ category, search }: { category?: string; search?: 
     const next = cur.includes(v) ? cur.filter((x) => x !== v) : [...cur, v];
     if (next.length) n.set(k, next.join(',')); else n.delete(k);
   });
-  const clearAll = () => update((n) => { for (const k of [...FILTER_KEYS, 'min', 'max', 'estoque']) n.delete(k); });
+  const clearAll = () => update((n) => { for (const k of [...FILTER_KEYS, 'min', 'max', 'estoque', 'novidades', 'colecao']) n.delete(k); });
+  // Analytics (somente com consentimento): busca e uso de filtros.
+  useEffect(() => {
+    if (!data) return;
+    if (search && q) track({ event: 'search', searchTerm: q, resultsCount: data.total, props: data.correctedQuery ? { corrigido: data.correctedQuery } : undefined });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data?.total, q]);
 
   if (!search && !loading && !error && data && !data.category) return <NotFoundPage />;
 
@@ -102,10 +109,23 @@ export function CatalogPage({ category, search }: { category?: string; search?: 
   }
   if (sp.get('min') || sp.get('max')) chips.push({ key: 'price', label: `Preço: ${sp.get('min') ? formatPrice(Number(sp.get('min'))) : '…'} – ${sp.get('max') ? formatPrice(Number(sp.get('max'))) : '…'}`, remove: () => update((n) => { n.delete('min'); n.delete('max'); }) });
   if (sp.get('estoque') === '1') chips.push({ key: 'stock', label: 'Somente disponíveis', remove: () => update((n) => n.delete('estoque')) });
+  if (sp.get('novidades') === '1') chips.push({ key: 'new', label: 'Novidades', remove: () => update((n) => n.delete('novidades')) });
+  if (sp.get('colecao')) chips.push({ key: 'col', label: `Coleção: ${data?.facets.collections?.find((c) => c.value === sp.get('colecao'))?.label ?? sp.get('colecao')}`, remove: () => update((n) => n.delete('colecao')) });
 
   const filters = data ? (
     <div className="filters">
-      <Checkbox checked={sp.get('estoque') === '1'} onChange={(v) => update((n) => (v ? n.set('estoque', '1') : n.delete('estoque')))} label="Somente disponíveis em estoque" />
+      <Checkbox checked={sp.get('estoque') === '1'} onChange={(v) => { track({ event: 'filter_use', props: { filtro: 'estoque' } }); update((n) => (v ? n.set('estoque', '1') : n.delete('estoque'))); }} label="Somente disponíveis em estoque" />
+      {category !== 'novidades' && (data.facets.newCount ?? 0) > 0 ? <Checkbox checked={sp.get('novidades') === '1'} onChange={(v) => update((n) => (v ? n.set('novidades', '1') : n.delete('novidades')))} label={<>Somente novidades <span className="facet__count">({data.facets.newCount})</span></>} /> : null}
+      {data.facets.collections?.length ? (
+        <fieldset className="facet is-open">
+          <legend><span>Coleção</span></legend>
+          <ul>
+            {data.facets.collections.map((c) => (
+              <li key={c.value}><Checkbox checked={sp.get('colecao') === c.value} onChange={(v) => update((n) => (v ? n.set('colecao', c.value) : n.delete('colecao')))} label={<>{c.label} <span className="facet__count">({c.count})</span></>} /></li>
+            ))}
+          </ul>
+        </fieldset>
+      ) : null}
       {(['publico', 'tipo', 'tamanho', 'cor'] as FilterKey[]).map((k) => (
         <FacetGroup key={k} k={k} values={data.facets[k === 'publico' ? 'audience' : k === 'tamanho' ? 'size' : k === 'cor' ? 'color' : 'type']} selected={getList(sp, k)} onToggle={toggle} />
       ))}
@@ -152,6 +172,9 @@ export function CatalogPage({ category, search }: { category?: string; search?: 
                 <Icon name="chevronDown" size={14} />
               </label>
             </div>
+            {search && data?.correctedQuery ? (
+              <Notice tone="info">Não encontramos resultados para “{q}”. Mostrando resultados para <strong>“{data.correctedQuery}”</strong>. <button className="link-btn" onClick={() => update((n) => n.set('q', data.correctedQuery!))}>Buscar “{data.correctedQuery}”</button></Notice>
+            ) : null}
             {chips.length ? (
               <div className="active-filters" aria-label="Filtros ativos">
                 {chips.map((c) => <button key={c.key} className="chip chip--removable" onClick={c.remove} aria-label={`Remover filtro ${c.label}`}>{c.label} <Icon name="close" size={14} /></button>)}
@@ -161,8 +184,17 @@ export function CatalogPage({ category, search }: { category?: string; search?: 
             {error ? <ErrorState message={error} onRetry={reload} /> : loading && !data ? <ProductGridSkeleton count={8} /> : data && data.items.length === 0 ? (
               <EmptyState
                 title={chips.length ? 'Nenhum produto com esses filtros' : search ? 'Nenhum produto encontrado' : 'Ainda não há produtos nesta categoria'}
-                text={chips.length ? 'Remova alguns filtros para ver mais opções.' : search ? 'Verifique a ortografia ou tente termos mais gerais.' : 'Volte em breve — novas peças estão a caminho.'}
-                action={chips.length ? <Button variant="secondary" size="sm" onClick={clearAll}>Limpar filtros</Button> : <Link to="/categoria/novidades" className="btn btn--secondary btn--sm">Ver novidades</Link>}
+                text={chips.length ? 'Remova alguns filtros para ver mais opções.' : search ? 'Verifique a ortografia, use termos mais gerais ou explore as sugestões abaixo.' : 'Volte em breve — novas peças estão a caminho.'}
+                action={chips.length ? <Button variant="secondary" size="sm" onClick={clearAll}>Limpar filtros</Button> : (
+                  <div className="empty-alts">
+                    {search && data.suggestions?.length ? <div className="chips-row">{data.suggestions.map((t) => <Link key={t} to={`/busca?q=${encodeURIComponent(t)}`} className="chip">{t}</Link>)}</div> : null}
+                    <div className="chips-row">
+                      <Link to="/categoria/novidades" className="btn btn--secondary btn--sm">Ver novidades</Link>
+                      <Link to="/colecoes" className="btn btn--ghost btn--sm">Coleções</Link>
+                      {search ? <Link to="/atendimento?assunto=produto" className="btn btn--ghost btn--sm">Pedir ajuda para encontrar</Link> : null}
+                    </div>
+                  </div>
+                )}
               />
             ) : data ? (
               <div className={loading ? 'is-refreshing' : ''} aria-busy={loading}>

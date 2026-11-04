@@ -190,6 +190,7 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 700; line-height: 1.
 .accordion:last-child { border-bottom: 1px solid var(--c-line); }
 .accordion h3 { font-family: var(--font-sans); font-weight: 600; font-size: var(--fs-micro); letter-spacing: var(--tracking-caps); text-transform: uppercase; }
 .accordion h3 button { display: flex; width: 100%; justify-content: space-between; align-items: center; min-height: 58px; text-align: left; }
+[hidden] { display: none !important; }
 .accordion__panel { padding-bottom: 22px; font-size: var(--fs-base); color: var(--c-graphite); display: grid; gap: 12px; }
 .accordion__panel p { max-width: 64ch; }
 

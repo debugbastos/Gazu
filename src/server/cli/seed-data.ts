@@ -4,6 +4,7 @@ import crypto from 'node:crypto';
 import { ROOT } from '../config.ts';
 import type { Database } from '../db.ts';
 import { defaultSettings } from '../services/settings.ts';
+import { seedContent } from './seed-content.ts';
 
 interface CatalogProduct {
   f: string; slug: string; name: string; cats: string[]; aud: string; type: string; colors: [string, string][]; sz: 'A' | 'K' | 'S' | 'U'; price: number; desc: string; pos: string; note?: string;
@@ -65,14 +66,17 @@ export function seedDatabase(db: Database, opts: { reset?: boolean } = {}): { pr
       });
     });
 
-    const base = Date.now() - catalog.products.length * 3600_000;
+    // Datas de cadastro de DEMONSTRAÇÃO distribuídas nos últimos 180 dias: só as peças mais recentes
+    // recebem o selo "Novo" (período configurável em Configurações › Operação).
+    const span = 180 * 86400_000;
+    const base = Date.now() - span;
     catalog.products.forEach((p, idx) => {
       const cats = p.cats.map((c) => {
         const id = catId.get(c);
         if (!id) throw new Error(`Categoria desconhecida no catálogo: ${c} (${p.slug})`);
         return id;
       });
-      const created = new Date(base + idx * 3600_000).toISOString();
+      const created = new Date(base + Math.round(((idx + 1) * span) / catalog.products.length) - 3600_000).toISOString();
       const productId = db.run(
         `INSERT INTO products (slug, name, description, details, audience, product_type, primary_category_id, price_cents, is_active, is_featured, is_demo, color_confirmed, created_at, updated_at)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?, 1, 0, ?, ?)`,
@@ -102,6 +106,7 @@ export function seedDatabase(db: Database, opts: { reset?: boolean } = {}): { pr
 
     db.run("INSERT INTO coupons (code, description, discount_type, value, min_order_cents, is_active, is_demo) VALUES ('BEMVINDO10', 'Cupom de demonstração: 10% de desconto', 'percent', 10, 15000, 1, 1)");
     if (!db.get("SELECT 1 FROM settings WHERE key = 'store'")) db.run("INSERT INTO settings (key, value) VALUES ('store', ?)", JSON.stringify(defaultSettings));
+    seedContent(db);
     return { products: catalog.products.length, categories: catId.size, skipped: false };
   });
 }

@@ -48,6 +48,34 @@ export const checkoutSchema = z.object({
   saveAddress: z.boolean().optional(),
   shippingOptionId: z.string().min(1).max(40),
   expectedTotalCents: z.number().int().nonnegative().optional(),
+  attribution: z.object({
+    utmSource: z.string().max(80).optional().nullable(),
+    utmMedium: z.string().max(80).optional().nullable(),
+    utmCampaign: z.string().max(80).optional().nullable(),
+  }).optional(),
+});
+
+/** Compra sem cadastro: dados de contato do visitante + aceite dos termos. */
+export const guestCheckoutSchema = checkoutSchema.extend({
+  address: addressSchema,
+  guest: z.object({
+    name: z.string().trim().min(3, 'Informe seu nome completo.').max(120),
+    email,
+    phone: z.string().trim().max(30).optional().nullable(),
+    acceptTerms: z.literal(true, { errorMap: () => ({ message: 'É necessário aceitar os termos e a política de privacidade.' }) }),
+  }),
+});
+
+export const boletoSchema = z.object({
+  firstName: z.string().trim().min(2, 'Informe o nome.').max(60),
+  lastName: z.string().trim().min(2, 'Informe o sobrenome.').max(80),
+  cpf: z.string().trim().max(14),
+});
+
+export const returnRequestSchema = z.object({
+  type: z.enum(['withdrawal', 'exchange', 'defect', 'other']),
+  reason: z.string().trim().min(10, 'Descreva o motivo (mínimo de 10 caracteres).').max(2000),
+  items: z.array(z.object({ orderItemId: z.number().int().positive(), quantity: z.number().int().min(1).max(20) })).min(1, 'Selecione ao menos um item.').max(50),
 });
 
 export const cardPaymentSchema = z.object({
@@ -87,6 +115,16 @@ export const adminProductSchema = z.object({
   colorConfirmed: z.boolean(),
   seoTitle: z.string().trim().max(70).optional().nullable(),
   seoDescription: z.string().trim().max(170).optional().nullable(),
+  brand: z.string().trim().max(60).optional().nullable(),
+  composition: z.string().trim().max(1000).optional().nullable(),
+  careInstructions: z.string().trim().max(1000).optional().nullable(),
+  fitNotes: z.string().trim().max(1000).optional().nullable(),
+  costCents: z.number().int().min(0).max(100_000_00).optional().nullable(),
+  weightGrams: z.number().int().positive().max(50_000).optional().nullable(),
+  lengthCm: z.number().int().positive().max(200).optional().nullable(),
+  widthCm: z.number().int().positive().max(200).optional().nullable(),
+  heightCm: z.number().int().positive().max(200).optional().nullable(),
+  sizeGuideId: z.number().int().positive().optional().nullable(),
 }).refine((p) => !p.promoPriceCents || p.promoPriceCents < p.priceCents, { message: 'O preço promocional deve ser menor que o preço.', path: ['promoPriceCents'] })
   .refine((p) => p.categoryIds.includes(p.primaryCategoryId), { message: 'A categoria principal deve estar entre as categorias selecionadas.', path: ['primaryCategoryId'] });
 
@@ -97,6 +135,7 @@ export const adminVariantSchema = z.object({
   size: z.string().trim().min(1).max(20),
   sizeOrder: z.number().int().min(0).max(999).default(0),
   priceCents: money.optional().nullable(),
+  costCents: z.number().int().min(0).max(100_000_00).optional().nullable(),
   isActive: z.boolean().default(true),
   initialStock: z.number().int().min(0).max(100000).optional(),
 });

@@ -1,8 +1,8 @@
-import { useState, type ReactNode } from 'react';
+import { type ReactNode } from 'react';
 import { useDocumentTitle } from '../lib/hooks';
-import { Link, useRouter } from '../lib/router';
+import { Link } from '../lib/router';
 import { useStore } from '../lib/store';
-import { Breadcrumbs, Button, Field, Notice } from '../components/ui/ui';
+import { Breadcrumbs, Notice } from '../components/ui/ui';
 
 function Doc({ title, eyebrow, children }: { title: string; eyebrow?: string; children: ReactNode }) {
   useDocumentTitle(title);
@@ -57,9 +57,13 @@ export function PrivacyPage() {
       <h2>Compartilhamento</h2>
       <p>Somente com prestadores necessários à operação (pagamento, entrega, hospedagem e e-mail), dentro do necessário para cada finalidade.</p>
       <h2>Seus direitos</h2>
-      <p>Você pode solicitar acesso, correção, portabilidade ou exclusão dos seus dados, ressalvadas as obrigações legais de guarda (por exemplo, registros fiscais de pedidos). Use os canais da página <Link to="/atendimento" className="link-underline">Atendimento</Link>.</p>
+      <p>Você pode solicitar acesso, correção, portabilidade ou exclusão dos seus dados, ressalvadas as obrigações legais de guarda (por exemplo, registros fiscais de pedidos). Com conta, use <Link to="/conta/privacidade" className="link-underline">Minha conta › Privacidade</Link> para baixar seus dados ou pedir a exclusão; sem conta, use a página <Link to="/atendimento" className="link-underline">Atendimento</Link>.</p>
+      <h2>Comunicações</h2>
+      <p>E-mails transacionais (confirmação, pagamento, envio, trocas) fazem parte da compra. Newsletter e lembretes de carrinho só são enviados com sua autorização, confirmada por e-mail, e podem ser cancelados a qualquer momento.</p>
       <h2>Cookies</h2>
-      <p>Usamos apenas cookies essenciais (sessão de login e segurança). O carrinho e os favoritos de visitantes ficam salvos no seu navegador.</p>
+      <p>Cookies essenciais mantêm o login, a sacola e a segurança. Cookies de análise só são usados se você permitir no aviso de cookies: registramos eventos de navegação anônimos (sem nome, e-mail ou IP) para melhorar a loja, apagados após 13 meses. Você pode mudar a escolha em “Preferências de cookies”, no rodapé.</p>
+      <h2>Retenção</h2>
+      <p>Dados da conta ficam enquanto ela existir. Pedidos e pagamentos são mantidos pelo prazo exigido pela legislação fiscal e contábil, mesmo após a exclusão da conta (sem vínculo com seus dados de contato).</p>
       <p className="muted small">Documento-base a ser revisado pelo responsável jurídico da loja antes da publicação.</p>
     </Doc>
   );
@@ -84,19 +88,24 @@ export function TermsPage() {
 }
 
 export function ReturnsPage() {
+  const { config } = useStore();
+  const p = config.settings.policies;
   return (
     <Doc title="Trocas e devoluções">
-      <h2>Arrependimento (7 dias)</h2>
-      <p>Você pode desistir da compra em até 7 dias corridos após o recebimento, conforme o art. 49 do Código de Defesa do Consumidor, com reembolso integral do valor pago.</p>
+      <h2>Desistência ({p?.withdrawalDays ?? 7} dias)</h2>
+      <p>Você pode desistir da compra em até {p?.withdrawalDays ?? 7} dias corridos após o recebimento, conforme o art. 49 do Código de Defesa do Consumidor, com reembolso integral do valor pago, estornado pelo mesmo meio de pagamento.</p>
+      <h2>Produto com defeito ({p?.defectDays ?? 90} dias)</h2>
+      <p>Produtos com defeito podem ser trocados ou devolvidos em até {p?.defectDays ?? 90} dias após o recebimento (art. 26 do CDC).</p>
+      <h2>Troca de tamanho ou cor</h2>
+      {p?.exchangeDays ? <p>Trocas de tamanho ou cor podem ser solicitadas em até {p.exchangeDays} dias após o recebimento, sujeitas à disponibilidade.</p> : <p>Solicite pela página do pedido: a disponibilidade e as condições são confirmadas pela equipe em cada caso.</p>}
       <h2>Como solicitar</h2>
       <ol>
-        <li>Acesse <Link to="/conta/pedidos" className="link-underline">Meus pedidos</Link> e anote o número do pedido.</li>
-        <li>Entre em contato pelos canais da página <Link to="/atendimento" className="link-underline">Atendimento</Link>.</li>
-        <li>Envie o produto sem sinais de uso, com etiquetas, conforme as instruções que você receber.</li>
+        <li>Abra o pedido em <Link to="/conta/pedidos" className="link-underline">Meus pedidos</Link> (ou pelo link do e-mail da compra, se comprou sem cadastro).</li>
+        <li>Clique em <strong>Solicitar troca ou devolução</strong>, escolha os itens e descreva o motivo.</li>
+        <li>Você recebe as instruções de envio por e-mail. O produto deve retornar sem sinais de uso, com etiquetas.</li>
+        <li>Após o recebimento, o estorno é solicitado ao provedor de pagamento e você é avisado quando ele for confirmado.</li>
       </ol>
-      <h2>Trocas por tamanho ou defeito</h2>
-      <p>As condições de troca por tamanho, prazos adicionais e responsabilidade pelo frete de troca serão definidas pela loja.</p>
-      <Notice tone="warning">Política comercial de trocas pendente de definição pelo cliente (prazos além do legal, custos de frete e canal de logística reversa).</Notice>
+      <Notice tone="warning">Custos de frete de troca e o canal de logística reversa (postagem ou coleta) ainda precisam ser definidos pela loja.</Notice>
     </Doc>
   );
 }
@@ -108,50 +117,9 @@ export function DeliveryPage() {
       <p>O valor e o prazo de entrega são calculados pelo CEP no carrinho e no checkout, de acordo com as opções disponíveis para a sua região.</p>
       {!config.shipping.configured ? <Notice tone="warning">As regras de frete ainda não foram configuradas pela loja.</Notice> : config.shipping.provider === 'demo' ? <Notice tone="info">Ambiente de demonstração: as opções de frete exibidas são simuladas e não representam cotações reais.</Notice> : null}
       <h2>Acompanhamento</h2>
-      <p>Assim que o pedido for enviado, o código de rastreamento aparece em <Link to="/conta/pedidos" className="link-underline">Meus pedidos</Link>.</p>
+      <p>Assim que o pedido for enviado, o código de rastreamento aparece em <Link to="/conta/pedidos" className="link-underline">Meus pedidos</Link>, no e-mail de envio e na página <Link to="/rastreio" className="link-underline">Rastrear pedido</Link> (número do pedido + e-mail da compra).</p>
       <h2>Prazos</h2>
       <p>O prazo começa a contar após a confirmação do pagamento. Prazos são estimativas em dias úteis.</p>
-    </Doc>
-  );
-}
-
-export function ServicePage() {
-  const { config } = useStore();
-  const c = config.settings.contact;
-  const any = c.email || c.phone || c.whatsapp;
-  return (
-    <Doc title="Atendimento" eyebrow="Fale com a GAZU">
-      {any ? (
-        <ul className="contact-list">
-          {c.email ? <li><strong>E-mail</strong><a href={`mailto:${c.email}`}>{c.email}</a></li> : null}
-          {c.phone ? <li><strong>Telefone</strong><span>{c.phone}</span></li> : null}
-          {c.whatsapp ? <li><strong>WhatsApp</strong><span>{c.whatsapp}</span></li> : null}
-          {c.serviceHours ? <li><strong>Horário</strong><span>{c.serviceHours}</span></li> : null}
-        </ul>
-      ) : <Notice tone="warning">Os canais de atendimento ainda não foram configurados pela loja.</Notice>}
-      <h2>Perguntas frequentes</h2>
-      <h3>Quando meu pedido é confirmado?</h3>
-      <p>Quando o provedor de pagamento confirma a aprovação. Pix costuma ser confirmado em instantes.</p>
-      <h3>Como acompanho a entrega?</h3>
-      <p>Em <Link to="/conta/pedidos" className="link-underline">Meus pedidos</Link>, assim que o pedido for enviado.</p>
-      <h3>Como faço uma troca?</h3>
-      <p>Veja a página <Link to="/trocas-e-devolucoes" className="link-underline">Trocas e devoluções</Link>.</p>
-    </Doc>
-  );
-}
-
-export function TrackOrderPage() {
-  const { user } = useStore();
-  const { navigate } = useRouter();
-  const [number, setNumber] = useState('');
-  return (
-    <Doc title="Rastrear pedido">
-      <p>Informe o número do pedido (por exemplo, GZ100001). Por segurança, os detalhes só são exibidos para a conta que fez a compra.</p>
-      <form className="track-form" onSubmit={(e) => { e.preventDefault(); const n = number.trim().toUpperCase(); if (!n) return; navigate(user ? `/conta/pedidos/${encodeURIComponent(n)}` : `/entrar?returnTo=${encodeURIComponent(`/conta/pedidos/${n}`)}`); }}>
-        <Field label="Número do pedido" value={number} onChange={(e) => setNumber(e.target.value)} placeholder="GZ100001" maxLength={20} required />
-        <Button>Ver pedido</Button>
-      </form>
-      {user ? <p><Link to="/conta/pedidos" className="link-underline">Ver todos os meus pedidos</Link></p> : null}
     </Doc>
   );
 }

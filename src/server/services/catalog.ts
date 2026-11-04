@@ -3,11 +3,15 @@ import type {
   BreadcrumbDTO, CatalogQuery, CatalogResultDTO, CategoryDTO, ColorDTO, FacetValue, ImageDTO, ProductCardDTO, ProductDetailDTO, VariantDTO, Audience,
 } from '../../shared/types.ts';
 import { AUDIENCE_LABEL } from '../../shared/format.ts';
+import type { FaqItemDTO, LookbookCardDTO, QuickProductDTO, QuickVariantDTO, ReviewSummaryDTO, SizeGuideDTO } from '../../shared/types.ts';
+import { renderMarkdown } from '../../shared/markdown.ts';
+import { getSettings } from './settings.ts';
 
 interface ProductRow {
   id: number; slug: string; name: string; description: string; details: string | null; audience: Audience; product_type: string;
   primary_category_id: number | null; price_cents: number; promo_price_cents: number | null; promo_starts_at: string | null; promo_ends_at: string | null;
   is_active: number; is_featured: number; is_demo: number; color_confirmed: number; seo_title: string | null; seo_description: string | null; created_at: string;
+  published_at?: string | null; brand?: string | null; composition?: string | null; care_instructions?: string | null; fit_notes?: string | null; size_guide_id?: number | null;
 }
 interface ImageRow { id: number; product_id: number; url: string; srcset: string | null; width: number | null; height: number | null; alt: string; color_name: string | null; object_position: string; position: number }
 interface VariantRow { id: number; product_id: number; sku: string; color_name: string; color_hex: string | null; size: string; size_order: number; price_cents: number | null; stock: number; is_active: number }
@@ -90,7 +94,19 @@ export function cardsFor(rows: ProductRow[]): ProductCardDTO[] {
   const images = db.all<ImageRow>(`SELECT * FROM product_images WHERE product_id IN (${ph}) ORDER BY product_id, position`, ...ids);
   const variants = db.all<VariantRow>(`SELECT * FROM product_variants WHERE is_active = 1 AND product_id IN (${ph}) ORDER BY size_order`, ...ids);
   const firstImage = new Map<number, ImageRow>();
-  for (const im of images) if (!firstImage.has(im.product_id)) firstImage.set(im.product_id, im);
+  const secondImage = new Map<number, ImageRow>();
+  const byColor = new Map<number, Record<string, ImageDTO>>();
+  for (const im of images) {
+    if (!firstImage.has(im.product_id)) firstImage.set(im.product_id, im);
+    else if (!secondImage.has(im.product_id) && !im.color_name) secondImage.set(im.product_id, im);
+    if (im.color_name) {
+      const m = byColor.get(im.product_id) ?? {};
+      if (!m[im.color_name]) m[im.color_name] = toImage(im);
+      byColor.set(im.product_id, m);
+    }
+  }
+  const settings = getSettings();
+  const newSince = new Date(Date.now() - settings.operations.newArrivalsDays * 86400_000).toISOString();
   const colors = new Map<number, Map<string, ColorDTO>>();
   const stock = new Map<number, number>();
   for (const v of variants) {
@@ -113,15 +129,149 @@ export function cardsFor(rows: ProductRow[]): ProductCardDTO[] {
       available: (stock.get(r.id) ?? 0) > 0,
       isDemo: Boolean(r.is_demo),
       createdAt: r.created_at,
+      hoverImage: secondImage.has(r.id) ? toImage(secondImage.get(r.id)!) : null,
+      colorImages: byColor.get(r.id),
+      isNew: (r.published_at ?? r.created_at) >= newSince,
+      lowStock: (stock.get(r.id) ?? 0) > 0 && (stock.get(r.id) ?? 0) <= 3,
     };
   });
+}
+
+/** Produtos com variantes resumidas (lookbook comprável, "Monte seu look", "Compre o visual"). */
+export function quickProducts(ids: number[]): QuickProductDTO[] {
+  if (!ids.length) return [];
+  const db = getDb();
+  const rows = db.all<ProductRow>(`SELECT * FROM products WHERE is_active = 1 AND id IN (${ids.map(() => '?').join(',')})`, ...ids);
+  const cards = new Map(cardsFor(rows).map((c) => [c.id, c]));
+  const byId = new Map(rows.map((r) => [r.id, r]));
+  const variants = db.all<VariantRow>(`SELECT * FROM product_variants WHERE is_active = 1 AND product_id IN (${ids.map(() => '?').join(',')}) ORDER BY color_name, size_order`, ...ids);
+  const vmap = new Map<number, QuickVariantDTO[]>();
+  for (const v of variants) {
+    const p = byId.get(v.product_id);
+    if (!p) continue;
+    const price = variantUnitPrice(p, v);
+    const list = vmap.get(v.product_id) ?? [];
+    list.push({ id: v.id, colorName: v.color_name, colorHex: v.color_hex, size: v.size, stock: v.stock, priceCents: price.original, promoPriceCents: price.unit < price.original ? price.unit : null });
+    vmap.set(v.product_id, list);
+  }
+  return ids.map((id) => cards.get(id)).filter((c): c is ProductCardDTO => Boolean(c)).map((c) => ({ ...c, variants: vmap.get(c.id) ?? [] }));
+}
+
+export function reviewSummary(productId: number): ReviewSummaryDTO {
+  const rows = getDb().all<{ rating: number; n: number }>("SELECT rating, COUNT(*) AS n FROM reviews WHERE product_id = ? AND status = 'approved' GROUP BY rating", productId);
+  const distribution = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 } as ReviewSummaryDTO['distribution'];
+  let count = 0, sum = 0;
+  for (const r of rows) { distribution[r.rating as 1] = r.n; count += r.n; sum += r.rating * r.n; }
+  return { count, average: count ? Math.round((sum / count) * 10) / 10 : null, distribution };
+}
+
+export function sizeGuideById(id: number | null | undefined): SizeGuideDTO | null {
+  if (!id) return null;
+  const g = getDb().get<{ id: number; name: string; table_json: string; note: string | null; is_demo: number }>('SELECT * FROM size_guides WHERE id = ?', id);
+  if (!g) return null;
+  try {
+    const t = JSON.parse(g.table_json) as { head: string[]; rows: string[][] };
+    return { id: g.id, name: g.name, head: t.head ?? [], rows: t.rows ?? [], note: g.note, isDemo: Boolean(g.is_demo) };
+  } catch {
+    return null;
+  }
+}
+
+export function lookbooksForProduct(productId: number): LookbookCardDTO[] {
+  return getDb().all<{ id: number; slug: string; title: string; description: string; cover_url: string | null; is_demo: number; published_at: string | null; n: number }>(
+    `SELECT l.*, (SELECT COUNT(DISTINCT product_id) FROM lookbook_products x WHERE x.lookbook_id = l.id) AS n FROM lookbooks l
+      WHERE l.status = 'published' AND EXISTS (SELECT 1 FROM lookbook_products lp WHERE lp.lookbook_id = l.id AND lp.product_id = ?) ORDER BY l.position, l.id DESC LIMIT 3`, productId,
+  ).map((l) => ({ id: l.id, slug: l.slug, title: l.title, description: l.description, coverUrl: l.cover_url, productCount: l.n, isDemo: Boolean(l.is_demo), publishedAt: l.published_at }));
+}
+
+export function faqFor(productId: number | null, category?: string): FaqItemDTO[] {
+  const db = getDb();
+  const rows = productId
+    ? db.all<{ id: number; category: string; question: string; answer: string }>('SELECT * FROM faq_items WHERE is_active = 1 AND product_id = ? ORDER BY position, id', productId)
+    : db.all<{ id: number; category: string; question: string; answer: string }>(`SELECT * FROM faq_items WHERE is_active = 1 AND product_id IS NULL ${category ? 'AND category = ?' : ''} ORDER BY category, position, id`, ...(category ? [category] : []));
+  return rows.map((f) => ({ id: f.id, category: f.category, question: f.question, html: renderMarkdown(f.answer) }));
 }
 
 const EFFECTIVE_PRICE = `(CASE WHEN p.promo_price_cents IS NOT NULL AND p.promo_price_cents < p.price_cents
   AND (p.promo_starts_at IS NULL OR p.promo_starts_at <= :now) AND (p.promo_ends_at IS NULL OR p.promo_ends_at >= :now)
   THEN p.promo_price_cents ELSE p.price_cents END)`;
 
+/** Normaliza um termo de busca: sem acentos, minúsculo, singular aproximado ("camisetas" → "camiseta"). */
+export function searchTokens(q: string): string[] {
+  return normalizeText(q).replace(/[^a-z0-9\s-]/g, ' ').split(/\s+/).filter((t) => t.length > 0).slice(0, 8)
+    .map((t) => (t.length >= 5 && t.endsWith('s') ? t.slice(0, -1) : t));
+}
+
+function levenshtein(a: string, b: string): number {
+  if (Math.abs(a.length - b.length) > 2) return 3;
+  const prev = Array.from({ length: b.length + 1 }, (_, i) => i);
+  for (let i = 1; i <= a.length; i++) {
+    let diag = prev[0]!;
+    prev[0] = i;
+    for (let j = 1; j <= b.length; j++) {
+      const tmp = prev[j]!;
+      prev[j] = Math.min(prev[j]! + 1, prev[j - 1]! + 1, diag + (a[i - 1] === b[j - 1] ? 0 : 1));
+      diag = tmp;
+    }
+  }
+  return prev[b.length]!;
+}
+
+let vocab: { at: number; words: string[] } | null = null;
+/** Vocabulário do catálogo (nomes, tipos, categorias, cores) para corrigir erros de digitação. */
+function catalogVocabulary(): string[] {
+  if (vocab && Date.now() - vocab.at < 5 * 60_000) return vocab.words;
+  const db = getDb();
+  const texts = [
+    ...db.all<{ t: string }>('SELECT name || \' \' || product_type AS t FROM products WHERE is_active = 1'),
+    ...db.all<{ t: string }>('SELECT name AS t FROM categories WHERE is_active = 1'),
+    ...db.all<{ t: string }>('SELECT DISTINCT color_name AS t FROM product_variants WHERE is_active = 1'),
+  ];
+  const words = new Set<string>();
+  for (const { t } of texts) for (const w of normalizeText(t).split(/[^a-z0-9]+/)) if (w.length >= 3) words.add(w);
+  vocab = { at: Date.now(), words: [...words] };
+  return vocab.words;
+}
+
+/** Sugere uma grafia alternativa para termos sem resultado (ex.: "camiseya" → "camiseta"). */
+export function correctQuery(q: string): string | null {
+  const words = catalogVocabulary();
+  let changed = false;
+  const out = normalizeText(q).split(/\s+/).filter(Boolean).map((t) => {
+    if (t.length < 3 || words.some((w) => w.includes(t) || t.includes(w))) return t;
+    let best: string | null = null;
+    let bestD = t.length > 5 ? 3 : 2;
+    for (const w of words) {
+      const d = levenshtein(t, w);
+      if (d < bestD) { bestD = d; best = w; }
+    }
+    if (best) { changed = true; return best; }
+    return t;
+  });
+  return changed ? out.join(' ') : null;
+}
+
 export function searchCatalog(q: CatalogQuery): CatalogResultDTO {
+  const first = runSearch(q);
+  if (first.total > 0 || !q.q) return first;
+  const corrected = correctQuery(q.q);
+  if (corrected && corrected !== normalizeText(q.q)) {
+    const second = runSearch({ ...q, q: corrected });
+    if (second.total > 0) return { ...second, correctedQuery: corrected };
+  }
+  return { ...first, suggestions: popularSearches(5) };
+}
+
+/** Termos mais buscados (com resultados) nos últimos 30 dias — dados reais de analytics, quando houver. */
+export function popularSearches(limit = 6): string[] {
+  const since = new Date(Date.now() - 30 * 86400_000).toISOString();
+  return getDb().all<{ t: string }>(
+    `SELECT lower(search_term) AS t, COUNT(*) AS n FROM analytics_events WHERE event = 'search' AND results_count > 0 AND created_at >= ? AND search_term IS NOT NULL
+      GROUP BY lower(search_term) ORDER BY n DESC LIMIT ?`, since, limit,
+  ).map((r) => r.t);
+}
+
+function runSearch(q: CatalogQuery): CatalogResultDTO {
   const db = getDb();
   const now = nowIso();
   const perPage = Math.min(Math.max(q.perPage ?? 24, 1), 60);
@@ -146,7 +296,11 @@ export function searchCatalog(q: CatalogQuery): CatalogResultDTO {
     };
   }
 
-  const tokens = q.q ? normalizeText(q.q).split(/\s+/).filter((t) => t.length > 0).slice(0, 8) : [];
+  if (q.collection) {
+    baseWhere.push(`p.id IN (SELECT cp.product_id FROM collection_products cp JOIN collections col ON col.id = cp.collection_id WHERE col.slug = ? AND col.status IN ('active', 'archived'))`);
+    baseParams.push(q.collection);
+  }
+  const tokens = q.q ? searchTokens(q.q) : [];
   for (const t of tokens) {
     const like = `%${t.replace(/[%_\\]/g, (m) => '\\' + m)}%`;
     baseWhere.push(`(gz_norm(p.name) LIKE ? ESCAPE '\\' OR gz_norm(p.description) LIKE ? ESCAPE '\\' OR gz_norm(p.product_type) LIKE ? ESCAPE '\\'
@@ -165,6 +319,11 @@ export function searchCatalog(q: CatalogQuery): CatalogResultDTO {
   if (q.type?.length) {
     where.push(`p.product_type IN (${q.type.map(() => '?').join(',')})`);
     params.push(...q.type);
+  }
+  const newSince = new Date(Date.now() - getSettings().operations.newArrivalsDays * 86400_000).toISOString();
+  if (q.newOnly || q.category === 'novidades') {
+    where.push('COALESCE(p.published_at, p.created_at) >= ?');
+    params.push(newSince);
   }
   const vConds: string[] = ['v.is_active = 1'];
   const vParams: Param[] = [];
@@ -206,6 +365,11 @@ export function searchCatalog(q: CatalogQuery): CatalogResultDTO {
     `SELECT v.color_name AS value, COUNT(DISTINCT p.id) AS count, MAX(v.color_hex) AS hex FROM products p JOIN product_variants v ON v.product_id = p.id AND v.is_active = 1 WHERE ${bw} GROUP BY v.color_name ORDER BY count DESC, value LIMIT 40`, ...baseParams,
   ).map((r): FacetValue => ({ value: r.value, label: r.value, count: r.count, hex: r.hex }));
   const pr = db.get<{ min: number | null; max: number | null }>(`SELECT MIN(${eff}) AS min, MAX(${eff}) AS max FROM products p WHERE ${bw}`, ...effParams, ...effParams, ...baseParams);
+  const collections = db.all<{ value: string; label: string; count: number }>(
+    `SELECT col.slug AS value, col.name AS label, COUNT(DISTINCT p.id) AS count FROM products p JOIN collection_products cp ON cp.product_id = p.id
+       JOIN collections col ON col.id = cp.collection_id AND col.status = 'active' WHERE ${bw} GROUP BY col.id ORDER BY col.position, col.name`, ...baseParams,
+  ).map((r): FacetValue => ({ value: r.value, label: r.label, count: r.count }));
+  const newCount = db.get<{ n: number }>(`SELECT COUNT(*) AS n FROM products p WHERE ${bw} AND COALESCE(p.published_at, p.created_at) >= ?`, ...baseParams, newSince)!.n;
 
   return {
     items: cardsFor(rows),
@@ -213,7 +377,7 @@ export function searchCatalog(q: CatalogQuery): CatalogResultDTO {
     page,
     perPage,
     pages: Math.max(1, Math.ceil(total / perPage)),
-    facets: { audience, size, color, type, price: { min: pr?.min ?? 0, max: pr?.max ?? 0 } },
+    facets: { audience, size, color, type, price: { min: pr?.min ?? 0, max: pr?.max ?? 0 }, collections, newCount },
     category,
   };
 }
@@ -257,6 +421,14 @@ export function productBySlug(slug: string): (ProductDetailDTO & { seoTitle: str
     related: cardsFor(related),
     seoTitle: p.seo_title,
     seoDescription: p.seo_description,
+    brand: p.brand ?? null,
+    composition: p.composition ?? null,
+    careInstructions: p.care_instructions ?? null,
+    fitNotes: p.fit_notes ?? null,
+    sizeGuide: sizeGuideById(p.size_guide_id),
+    reviews: reviewSummary(p.id),
+    looks: lookbooksForProduct(p.id),
+    faq: faqFor(p.id),
   };
 }
 

@@ -3,6 +3,7 @@ import { env, isProd } from '../config.ts';
 import { getDb, nowIso } from '../db.ts';
 import { setCookie } from '../http.ts';
 import { randomToken, sha256 } from '../security.ts';
+import { isStaffRole, permissionsFor, type Permission, type StaffRole } from './permissions.ts';
 
 export const SESSION_COOKIE = 'gazu_session';
 
@@ -14,6 +15,9 @@ export interface SessionUser {
   emailVerified: boolean;
   hasPassword: boolean;
   googleLinked: boolean;
+  /** Papel na equipe (apenas administradores). */
+  staffRole: StaffRole | null;
+  permissions: Permission[];
 }
 
 export function createSession(res: ServerResponse, userId: string, ip: string, ua: string | undefined): void {
@@ -36,17 +40,19 @@ export function userFromToken(token: string | undefined): SessionUser | null {
   if (!token || token.length > 200) return null;
   const row = getDb().get<{
     id: string; email: string; role: 'customer' | 'admin'; full_name: string | null; email_verified_at: string | null; password_hash: string | null; google_sub: string | null; expires_at: string;
+    staff_role: string | null; anonymized_at: string | null;
   }>(
-    `SELECT u.id, u.email, u.role, p.full_name, u.email_verified_at, u.password_hash, u.google_sub, s.expires_at
+    `SELECT u.id, u.email, u.role, p.full_name, u.email_verified_at, u.password_hash, u.google_sub, s.expires_at, u.staff_role, u.anonymized_at
        FROM sessions s JOIN users u ON u.id = s.user_id LEFT JOIN profiles p ON p.user_id = u.id
       WHERE s.id = ?`,
     sha256(token),
   );
   if (!row) return null;
-  if (row.expires_at < nowIso()) {
+  if (row.expires_at < nowIso() || row.anonymized_at) {
     getDb().run('DELETE FROM sessions WHERE id = ?', sha256(token));
     return null;
   }
+  const staffRole = row.role === 'admin' ? (isStaffRole(row.staff_role) ? row.staff_role : 'owner') : null;
   return {
     id: row.id,
     email: row.email,
@@ -55,6 +61,8 @@ export function userFromToken(token: string | undefined): SessionUser | null {
     emailVerified: Boolean(row.email_verified_at),
     hasPassword: Boolean(row.password_hash),
     googleLinked: Boolean(row.google_sub),
+    staffRole,
+    permissions: permissionsFor(staffRole),
   };
 }
 

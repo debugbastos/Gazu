@@ -21,7 +21,10 @@
     "test:visual": "node tests/e2e/visual.mjs",
     "typecheck:server": "tsc -p tsconfig.server.json --noEmit",
     "build:html": "node scripts/build-standalone.mjs && node -e \"require('fs').mkdirSync('site',{recursive:true});require('fs').copyFileSync('dist/index.html','site/index.html')\"",
-    "test:html": "node tests/e2e/standalone.mjs"
+    "test:html": "node tests/e2e/standalone.mjs",
+    "backup": "node --disable-warning=ExperimentalWarning --import tsx src/server/cli/backup.ts",
+    "restore": "node --disable-warning=ExperimentalWarning --import tsx src/server/cli/restore.ts",
+    "brand": "node scripts/assets/build-brand-kit.mjs"
   },
   "dependencies": {
     "react": "19.2.8",

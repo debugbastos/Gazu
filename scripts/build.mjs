@@ -12,7 +12,9 @@ export const clientOptions = (dev = false) => ({
   bundle: true,
   outdir,
   format: 'esm',
-  splitting: false,
+  // Divisão de código: o painel administrativo vira um arquivo separado, carregado só em /admin.
+  splitting: true,
+  chunkNames: 'chunks/[name].[hash]',
   target: ['es2020', 'chrome100', 'safari15', 'firefox100'],
   jsx: 'automatic',
   loader: { '.svg': 'text' },
@@ -27,9 +29,11 @@ export const clientOptions = (dev = false) => ({
 });
 
 export function writeManifest(metafile) {
-  const outs = Object.keys(metafile.outputs).map((f) => '/' + path.relative(path.join(root, 'public'), path.resolve(root, f)).split(path.sep).join('/'));
-  const js = outs.find((f) => f.endsWith('.js'));
-  const css = outs.find((f) => f.endsWith('.css'));
+  const pub = (f) => '/' + path.relative(path.join(root, 'public'), path.resolve(root, f)).split(path.sep).join('/');
+  // Com divisão de código há vários .js: o manifesto aponta para o ponto de entrada (main.tsx).
+  const entry = Object.entries(metafile.outputs).find(([f, o]) => f.endsWith('.js') && o.entryPoint);
+  const js = entry ? pub(entry[0]) : undefined;
+  const css = entry?.[1].cssBundle ? pub(entry[1].cssBundle) : Object.keys(metafile.outputs).map(pub).find((f) => f.endsWith('.css'));
   fs.writeFileSync(path.join(outdir, 'manifest.json'), JSON.stringify({ js, css }, null, 2));
   return { js, css };
 }
