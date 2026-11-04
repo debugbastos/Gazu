@@ -42,7 +42,7 @@ const crumbs = (items: [string, string][]) => ({
 export function metaFor(pathname: string): Meta {
   const base: Meta = { title: `${SITE} — Moda que se move com você`, description: DEFAULT_DESC, status: 200 };
   if (pathname === '/') {
-    return { ...base, preload: ['/assets/hero/male/male-700.webp'], jsonLd: { '@context': 'https://schema.org', '@type': 'OnlineStore', name: SITE, url: env.APP_URL } };
+    return { ...base, preload: ['/assets/hero/male/male-1400.webp'], jsonLd: { '@context': 'https://schema.org', '@type': 'OnlineStore', name: SITE, url: env.APP_URL } };
   }
   if (PRIVATE_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + '/')) || /^\/atendimento\/[A-Z0-9]+/.test(pathname)) return { ...base, title: `${SITE}`, noindex: true };
   const db = getDb();

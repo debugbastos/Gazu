@@ -7,24 +7,32 @@ import { HeroController, DEFAULT_TIMING } from './heroController';
 import { asset } from '../../lib/asset';
 
 // Os quatro modelos fornecidos pelo cliente (recortes sem distorção; ver docs/INVENTARIO-IMAGENS.md).
+// Cada modelo tem 4 tamanhos (800, 1400, 2160 e ~3070 px de altura): o navegador escolhe o adequado à tela, até 4K.
+// Na versão HTML autônoma as imagens vêm embutidas no arquivo: usa-se uma só (2160 px, padrão 4K).
+const isStandalone = (): boolean => typeof window !== 'undefined' && Boolean(window.__GAZU_ASSET__);
+const HERO_HEIGHTS = [800, 1400, 2160] as const;
+const heroSrcSet = (src: string, w: number, h: number): string => {
+  const base = src.replace(/-\d+\.webp$/, '');
+  return [...HERO_HEIGHTS.map((hh) => `${asset(`${base}-${hh}.webp`)} ${Math.round((w * hh) / h)}w`), `${asset(`${base}-${h}.webp`)} ${w}w`].join(', ');
+};
 export const HERO_MODELS = [
   {
-    key: 'male', label: 'Masculino', href: '/categoria/masculino', src: '/assets/hero/male/male-954.webp', w: 458, h: 954,
+    key: 'male', label: 'Masculino', href: '/categoria/masculino', src: '/assets/hero/male/male-1400.webp', w: 1612, h: 3072,
     alt: 'Modelo masculino adulto de suéter azul-acinzentado, cachecol de tricô e bolsa de couro',
     height: 90, fade: true,
   },
   {
-    key: 'female', label: 'Feminino', href: '/categoria/feminino', src: '/assets/hero/female/female-1348.webp', w: 716, h: 1348,
+    key: 'female', label: 'Feminino', href: '/categoria/feminino', src: '/assets/hero/female/female-1400.webp', w: 1720, h: 3074,
     alt: 'Modelo feminina adulta de casaco marrom, camiseta branca, jeans destroyed e óculos escuros',
     height: 94, fade: true,
   },
   {
-    key: 'boys', label: 'Menino', href: '/categoria/infantil-menino', src: '/assets/hero/boys/boy-874.webp', w: 390, h: 874,
+    key: 'boys', label: 'Menino', href: '/categoria/infantil-menino', src: '/assets/hero/boys/boy-1400.webp', w: 1442, h: 3072,
     alt: 'Menino de camiseta verde estampada e bermuda off-white',
     height: 85, fade: true,
   },
   {
-    key: 'girls', label: 'Menina', href: '/categoria/infantil-menina', src: '/assets/hero/girls/girl-1164.webp', w: 422, h: 1164,
+    key: 'girls', label: 'Menina', href: '/categoria/infantil-menina', src: '/assets/hero/girls/girl-1400.webp', w: 1292, h: 3072,
     alt: 'Menina sorridente de vestido listrado em tons de rosa e tênis prateado',
     height: 84, fade: false,
   },
@@ -33,6 +41,7 @@ export const HERO_MODELS = [
 export function Hero() {
   const { config } = useStore();
   const reduced = usePrefersReducedMotion();
+  const standalone = isStandalone();
   const layers = useRef<(HTMLDivElement | null)[]>([]);
   const ctrl = useRef<HeroController | null>(null);
   const [index, setIndex] = useState(0);
@@ -97,7 +106,9 @@ export function Hero() {
             >
               <div className="hero-model__layer" ref={(el) => { layers.current[i] = el; }} style={{ visibility: 'hidden' }}>
                 <img
-                  src={asset(m.src)}
+                  src={standalone ? asset(m.src.replace(/-\d+\.webp$/, '-2160.webp')) : asset(m.src)}
+                  srcSet={standalone ? undefined : heroSrcSet(m.src, m.w, m.h)}
+                  sizes={standalone ? undefined : '(max-width: 1023px) 80vw, 50vh'}
                   width={m.w}
                   height={m.h}
                   alt={m.alt}

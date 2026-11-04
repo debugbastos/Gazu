@@ -23,6 +23,10 @@ const walkSrc = (dir) => fs.readdirSync(dir, { withFileTypes: true }).flatMap((d
 for (const f of walkSrc(path.join(root, 'src/client'))) {
   for (const m of fs.readFileSync(f, 'utf8').matchAll(/['"`](\/assets\/[^'"`$]+\.(?:webp|png|jpe?g))['"`]/g)) urls.add(m[1]);
 }
+// Modelos do hero em 2160 px (versão 4K usada no arquivo único).
+for (const dir of fs.readdirSync(path.join(root, 'public/assets/hero'))) {
+  for (const f of fs.readdirSync(path.join(root, 'public/assets/hero', dir))) if (f.endsWith('-2160.webp')) urls.add(`/assets/hero/${dir}/${f}`);
+}
 // Imagens do conteúdo editorial (coleções, lookbooks, journal) presentes no retrato do servidor.
 for (const m of JSON.stringify([seed.snapshot, seed.extras]).matchAll(/\/assets\/[A-Za-z0-9_./-]+\.(?:webp|png|jpe?g)/g)) urls.add(m[0]);
 const mime = { '.webp': 'image/webp', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg' };

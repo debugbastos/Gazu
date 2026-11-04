@@ -73,14 +73,15 @@ for (const e of catalog.editorial) {
 }
 
 // 2) Modelos do hero (recortes com transparência, gerados por scripts/assets/*.py)
-const heroMap = { male: ['male', 'male-original.jpg'], female: ['female', 'female-original.jpg'], boys: ['boy', 'boy-original.jpg'], girls: ['girl', 'girl-original.png'] };
+const heroMap = { male: ['male', 'male-original.png'], female: ['female', 'female-original.png'], boys: ['boy', 'boy-original.png'], girls: ['girl', 'girl-original.png'] };
 for (const [dir, [key, original]] of Object.entries(heroMap)) {
   const cut = src('hero/cutouts', `${key}@2x.png`);
   const out = pub('assets/hero', dir);
   ensure(out);
   const meta = await sharp(cut).metadata();
   const variants = [];
-  for (const h of [700, meta.height]) {
+  // Variações para srcset: celular, notebook, desktop/retina e telas 4K.
+  for (const h of [800, 1400, 2160, meta.height]) {
     const height = Math.min(h, meta.height);
     if (variants.some((v) => v.height === height)) continue;
     const file = path.join(out, `${key}-${height}.webp`);
@@ -90,7 +91,7 @@ for (const [dir, [key, original]] of Object.entries(heroMap)) {
   fs.copyFileSync(src('hero', original), path.join(out, original));
   const om = await sharp(src('hero', original)).metadata();
   manifest.hero[dir] = { original: { file: original, width: om.width, height: om.height }, variants };
-  inventory.push({ file: original, path: `assets-source/hero/${original}`, size: fs.statSync(src('hero', original)).size, width: om.width, height: om.height, format: om.format, status: `modelo do hero (${dir})`, product: '', category: 'hero', color: '', note: 'Recorte com segmentação (isnet/u2net) + revisão visual. Resolução de origem baixa.' });
+  inventory.push({ file: original, path: `assets-source/hero/${original}`, size: fs.statSync(src('hero', original)).size, width: om.width, height: om.height, format: om.format, status: `modelo do hero (${dir})`, product: '', category: 'hero', color: '', note: 'Recorte com segmentação (isnet/u2net) + revisão visual. Origem 1024×1536; ampliado 2× (Lanczos + nitidez) para telas 4K.' });
 }
 
 // 3) Referências
@@ -133,7 +134,7 @@ Observações gerais:
 - Todas as fotos de produto são JPG sem transparência (fundo fotográfico); são exibidas inteiras, sem distorção.
 - As cores listadas foram descritas pela aparência da foto e **precisam ser confirmadas** pelo cliente.
 - Diversas fotos exibem marcas de terceiros (logotipos esportivos, automobilísticos, de luxo e de times). Os nomes dos produtos foram mantidos descritivos e sem marcas. **Confirmar direitos de uso das imagens e autenticidade/licenciamento dos produtos antes da publicação.**
-- Os modelos do hero têm resolução baixa (300–624 px de largura). Recomenda-se fornecer fotos em alta resolução.
+- Modelos do hero: fotos de 1024×1536 fornecidas em 04/11/2026, recortadas e ampliadas 2× (até ~3070 px de altura) para telas 4K. Para nitidez nativa em 4K, forneça originais com 2160 px de altura ou mais.
 
 | Arquivo | Tipo | Dimensões | Tamanho | Status | Categoria | Cor (a confirmar) | Produto (slug) | Observação |
 |---|---|---|---|---|---|---|---|---|
